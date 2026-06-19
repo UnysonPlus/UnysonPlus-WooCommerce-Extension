@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'Products', 'fw' ),
 	'description' => __( 'Display a grid of WooCommerce products — recent, featured, on-sale, best-selling, top-rated, or by category.', 'fw' ),
-	'tab'         => __( 'Content Elements', 'fw' ),
+	'tab'         => __( 'WooCommerce Elements', 'fw' ),
 	'popup_size'  => 'large',
 
 	'title_template' => '

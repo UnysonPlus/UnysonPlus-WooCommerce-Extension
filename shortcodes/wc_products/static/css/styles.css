@@ -36,6 +36,9 @@
 .upw-products--cols-6 { --upw-cols: 6; }
 
 /* ---- Gaps ---------------------------------------------------------------- */
+.upw-products--gap-sm { --upw-gap: 0.75rem; }
+.upw-products--gap-md { --upw-gap: 1.5rem; }
+.upw-products--gap-lg { --upw-gap: 2.5rem; }
 .upw-products--gap-sm .upw-products__grid { gap: 0.75rem; }
 .upw-products--gap-md .upw-products__grid { gap: 1.5rem; }
 .upw-products--gap-lg .upw-products__grid { gap: 2.5rem; }
@@ -133,8 +136,53 @@
 
 /* ---- Responsive ---------------------------------------------------------- */
 @media (max-width: 991px) {
-	.upw-products__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.upw-products--grid .upw-products__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.upw-products--carousel .upw-product { flex-basis: calc((100% - var(--upw-gap, 1.5rem)) / 2); }
 }
 @media (max-width: 575px) {
-	.upw-products__grid { grid-template-columns: minmax(0, 1fr); }
+	.upw-products--grid .upw-products__grid { grid-template-columns: minmax(0, 1fr); }
+	.upw-products--carousel .upw-product { flex-basis: 84%; }
 }
+
+/* ---- Carousel ------------------------------------------------------------ */
+.upw-products--carousel { position: relative; }
+.upw-products--carousel .upw-products__grid {
+	display: flex;
+	grid-template-columns: none;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+	padding-bottom: 4px;
+}
+.upw-products--carousel .upw-products__grid::-webkit-scrollbar { display: none; }
+.upw-products--carousel .upw-product {
+	scroll-snap-align: start;
+	flex: 0 0 calc((100% - (var(--upw-cols, 4) - 1) * var(--upw-gap, 1.5rem)) / var(--upw-cols, 4));
+}
+
+.upw-products__nav {
+	position: absolute;
+	top: 38%;
+	transform: translateY(-50%);
+	z-index: 3;
+	width: 2.4rem;
+	height: 2.4rem;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	background: #fff;
+	color: #111;
+	font-size: 1.4rem;
+	line-height: 1;
+	cursor: pointer;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	transition: background 0.2s ease, color 0.2s ease;
+}
+.upw-products__nav--prev { left: -0.6rem; }
+.upw-products__nav--next { right: -0.6rem; }
+.upw-products__nav:hover { background: #111; color: #fff; }

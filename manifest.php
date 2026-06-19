@@ -11,7 +11,7 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.6';
+$manifest['version']     = '1.0.9';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,30 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.0.9 - Added three utility elements (WooCommerce Elements tab): Product
+ *         Search (a product-scoped search form), Mini Cart (an icon with a
+ *         live-updating dropdown of cart contents + subtotal), and Product
+ *         Filters (a shop price / attribute / rating / active-filter widget).
+ *         Also extended the Products element with a Carousel layout (a
+ *         dependency-free scroll-snap track with arrows) and three new sources:
+ *         By Tag, By Attribute, and Specific Products (by ID).
+ *
+ * 1.0.8 - Added the commerce-page elements (WooCommerce Elements tab): Cart,
+ *         Checkout, My Account, and Order Tracking. Each wraps the matching
+ *         classic WooCommerce shortcode so a store's cart / checkout / account
+ *         pages can be built in the page builder with surrounding content. Use
+ *         them on the pages assigned under WooCommerce → Settings → Advanced.
+ *
+ * 1.0.7 - Introduced a dedicated "WooCommerce Elements" builder tab and moved
+ *         the Products and Cart Icon elements into it. Added four catalog
+ *         elements (each a friendly wrapper around the matching WooCommerce
+ *         shortcode): Product Categories (category-card grid), Single Product
+ *         (one product card), Product Page (full single-product layout), and
+ *         Add to Cart Button (standalone buy button with optional price). A
+ *         shared helpers.php provides product / category select choices and
+ *         ensures WooCommerce's own styles + add-to-cart scripts load wherever
+ *         these elements are placed (not just on shop pages).
+ *
  * 1.0.4 - Added the "Cart" element (Header/Footer Elements tab): a cart icon
  *         (bag / cart / basket) with an optional live item-count badge and
  *         total, linking to the cart. The count / total refresh without a page

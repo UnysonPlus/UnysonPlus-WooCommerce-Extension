@@ -39,6 +39,9 @@ $show_rating  = $on( 'show_rating' );
 $show_price   = $on( 'show_price' );
 $show_atc     = $on( 'show_add_to_cart' );
 
+$layout      = ( isset( $atts['layout'] ) && $atts['layout'] === 'carousel' ) ? 'carousel' : 'grid';
+$show_arrows = ! array_key_exists( 'carousel_arrows', $atts ) ? true : $truthy( $atts['carousel_arrows'] );
+
 /* ---- Build the query ----------------------------------------------------- */
 $args = array(
 	'post_type'           => 'product',
@@ -116,6 +119,38 @@ switch ( $source ) {
 		$args['meta_key'] = '_wc_average_rating'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 		$args['order']    = 'DESC';
 		break;
+	case 'tag':
+		$tags = isset( $atts['tags'] ) ? array_filter( array_map( 'sanitize_title', array_map( 'trim', explode( ',', (string) $atts['tags'] ) ) ) ) : array();
+		if ( ! empty( $tags ) ) {
+			$tax_query[] = array(
+				'taxonomy' => 'product_tag',
+				'field'    => 'slug',
+				'terms'    => $tags,
+			);
+		}
+		break;
+	case 'attribute':
+		$attr = isset( $atts['attribute'] ) ? sanitize_title( preg_replace( '/^pa_/', '', (string) $atts['attribute'] ) ) : '';
+		if ( $attr !== '' ) {
+			$terms = isset( $atts['attribute_terms'] ) ? array_filter( array_map( 'sanitize_title', array_map( 'trim', explode( ',', (string) $atts['attribute_terms'] ) ) ) ) : array();
+			$tq    = array( 'taxonomy' => 'pa_' . $attr, 'field' => 'slug' );
+			if ( ! empty( $terms ) ) {
+				$tq['terms'] = $terms;
+			} else {
+				$tq['operator'] = 'EXISTS';
+			}
+			$tax_query[] = $tq;
+		}
+		break;
+	case 'ids':
+		$id_list = isset( $atts['product_ids'] ) ? array_filter( array_map( 'intval', array_map( 'trim', explode( ',', (string) $atts['product_ids'] ) ) ) ) : array();
+		if ( empty( $id_list ) ) {
+			return;
+		}
+		$args['post__in']       = $id_list;
+		$args['orderby']        = 'post__in';
+		$args['posts_per_page'] = count( $id_list );
+		break;
 	case 'category':
 	case 'recent':
 	default:
@@ -148,8 +183,14 @@ $wrap_classes = array(
 if ( $alignment !== '' && $alignment !== 'inherit' ) {
 	$wrap_classes[] = 'upw-products--align-' . $alignment;
 }
+$wrap_classes[] = 'upw-products--' . $layout;
 
 echo '<div class="' . esc_attr( implode( ' ', $wrap_classes ) ) . '">';
+
+if ( $layout === 'carousel' && $show_arrows ) {
+	echo '<button type="button" class="upw-products__nav upw-products__nav--prev" aria-label="' . esc_attr__( 'Previous', 'fw' ) . '">&#8249;</button>';
+}
+
 echo '<ul class="products upw-products__grid upw-products--cols-' . (int) $columns . '">';
 
 while ( $query->have_posts() ) {
@@ -200,6 +241,11 @@ while ( $query->have_posts() ) {
 }
 
 echo '</ul>';
+
+if ( $layout === 'carousel' && $show_arrows ) {
+	echo '<button type="button" class="upw-products__nav upw-products__nav--next" aria-label="' . esc_attr__( 'Next', 'fw' ) . '">&#8250;</button>';
+}
+
 echo '</div>';
 
 wp_reset_postdata();

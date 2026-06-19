@@ -1,0 +1,73 @@
+/**
+ * Mini Cart element — icon + dropdown panel.
+ */
+.upw-minicart {
+	position: relative;
+	display: inline-block;
+}
+.upw-minicart__toggle {
+	display: inline-flex;
+	align-items: center;
+	color: inherit;
+	text-decoration: none;
+	line-height: 1;
+}
+.upw-minicart__icon {
+	position: relative;
+	display: inline-flex;
+}
+.upw-minicart__icon svg { display: block; }
+.upw-minicart__count {
+	position: absolute;
+	top: -0.55em;
+	right: -0.6em;
+	min-width: 1.25em;
+	height: 1.25em;
+	padding: 0 0.3em;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	font-size: 0.65rem;
+	font-weight: 700;
+	line-height: 1;
+	border-radius: 1em;
+	background: #e2401c;
+	color: #fff;
+}
+
+/* Dropdown panel */
+.upw-minicart__panel {
+	position: absolute;
+	top: calc(100% + 0.6rem);
+	right: 0;
+	z-index: 60;
+	width: 320px;
+	max-width: 90vw;
+	padding: 1rem;
+	background: #fff;
+	color: #1a1a1a;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-radius: 6px;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(6px);
+	transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+}
+.upw-minicart.is-open > .upw-minicart__panel,
+.upw-minicart[data-trigger="hover"]:hover > .upw-minicart__panel {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+/* Tidy WooCommerce's mini-cart markup inside the panel. */
+.upw-minicart__panel ul.cart_list { list-style: none; margin: 0 0 0.75rem; padding: 0; max-height: 40vh; overflow-y: auto; }
+.upw-minicart__panel ul.cart_list li { position: relative; padding: 0.6rem 0 0.6rem 3.2rem; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.upw-minicart__panel ul.cart_list li img { position: absolute; left: 0; top: 0.6rem; width: 2.6rem; height: auto; }
+.upw-minicart__panel ul.cart_list li a.remove { position: absolute; right: 0; top: 0.6rem; }
+.upw-minicart__panel .woocommerce-mini-cart__total { display: flex; justify-content: space-between; padding: 0.6rem 0; font-weight: 600; }
+.upw-minicart__panel .woocommerce-mini-cart__buttons { display: flex; gap: 0.5rem; margin: 0; }
+.upw-minicart__panel .woocommerce-mini-cart__buttons .button { flex: 1; text-align: center; }
+.upw-minicart__panel p.woocommerce-mini-cart__empty-message { margin: 0; }

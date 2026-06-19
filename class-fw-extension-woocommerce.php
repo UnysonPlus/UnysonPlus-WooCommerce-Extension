@@ -74,8 +74,9 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		$count = (int) WC()->cart->get_cart_contents_count();
 		$total = WC()->cart->get_cart_total();
 
-		$fragments['.upw-cart .upw-cart__count'] = '<span class="upw-cart__count" aria-hidden="true">' . esc_html( $count ) . '</span>';
-		$fragments['.upw-cart .upw-cart__total'] = '<span class="upw-cart__total">' . wp_kses_post( $total ) . '</span>';
+		$fragments['.upw-cart .upw-cart__count']         = '<span class="upw-cart__count" aria-hidden="true">' . esc_html( $count ) . '</span>';
+		$fragments['.upw-cart .upw-cart__total']         = '<span class="upw-cart__total">' . wp_kses_post( $total ) . '</span>';
+		$fragments['.upw-minicart .upw-minicart__count'] = '<span class="upw-minicart__count" aria-hidden="true">' . esc_html( $count ) . '</span>';
 
 		return $fragments;
 	}
@@ -90,8 +91,24 @@ class FW_Extension_Woocommerce extends FW_Extension {
 	 */
 	public function _filter_disable_shortcodes( $disabled ) {
 		if ( ! class_exists( 'WooCommerce' ) ) {
-			$disabled[] = 'wc_products';
-			$disabled[] = 'wc_cart_link';
+			$disabled = array_merge(
+				$disabled,
+				array(
+					'wc_products',
+					'wc_cart_link',
+					'wc_product_categories',
+					'wc_product',
+					'wc_product_page',
+					'wc_add_to_cart',
+					'wc_cart',
+					'wc_checkout',
+					'wc_my_account',
+					'wc_order_tracking',
+					'wc_product_search',
+					'wc_mini_cart',
+					'wc_product_filters',
+				)
+			);
 		}
 		return $disabled;
 	}

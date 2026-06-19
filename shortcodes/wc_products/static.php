@@ -14,6 +14,15 @@ wp_enqueue_style(
 	$wc_ext->manifest->get_version()
 );
 
+// Carousel-layout arrow navigation (no-ops when no carousel is on the page).
+wp_enqueue_script(
+	'fw-shortcode-wc-products',
+	$wc_ext->get_declared_URI( '/shortcodes/wc_products/static/js/scripts.js' ),
+	array(),
+	$wc_ext->manifest->get_version(),
+	true
+);
+
 // WooCommerce only auto-loads its add-to-cart scripts on shop / product pages.
 // The grid's AJAX add-to-cart buttons can appear on any builder page, so ensure
 // the scripts are present (and cart fragments, so a Cart element updates live).
