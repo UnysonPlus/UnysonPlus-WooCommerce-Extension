@@ -1,0 +1,197 @@
+<?php if ( ! defined( 'FW' ) ) {
+	die( 'Forbidden' );
+}
+
+/*
+|--------------------------------------------------------------------------
+| Product category choices — populated from the product_cat taxonomy.
+| Guarded so this options file is safe to load when WooCommerce is inactive
+| (the taxonomy won't exist, so we just offer "All Categories").
+|--------------------------------------------------------------------------
+*/
+$wc_cat_choices = array( '' => __( 'All Categories', 'fw' ) );
+if ( function_exists( 'taxonomy_exists' ) && taxonomy_exists( 'product_cat' ) ) {
+	$wc_terms = get_terms(
+		array(
+			'taxonomy'   => 'product_cat',
+			'hide_empty' => false,
+		)
+	);
+	if ( ! is_wp_error( $wc_terms ) ) {
+		foreach ( $wc_terms as $wc_term ) {
+			$wc_cat_choices[ $wc_term->slug ] = $wc_term->name;
+		}
+	}
+}
+
+// Explicit yes/no switch so the stored att value is always predictable in view.php.
+if ( ! function_exists( 'upw_products_switch' ) ) {
+	function upw_products_switch( $label, $desc = '', $value = 'yes' ) {
+		return array(
+			'type'         => 'switch',
+			'label'        => $label,
+			'desc'         => $desc,
+			'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),
+			'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+			'value'        => $value,
+		);
+	}
+}
+
+$options = array(
+
+	'tab_content' => array(
+		'title'   => __( 'Content', 'fw' ),
+		'type'    => 'tab',
+		'options' => array(
+			'group_source' => array(
+				'type'    => 'group',
+				'options' => array(
+					'source'         => array(
+						'type'    => 'select',
+						'label'   => __( 'Source', 'fw' ),
+						'desc'    => __( 'Which products to display.', 'fw' ),
+						'choices' => array(
+							'recent'       => __( 'Recent', 'fw' ),
+							'featured'     => __( 'Featured', 'fw' ),
+							'sale'         => __( 'On Sale', 'fw' ),
+							'best_selling' => __( 'Best Selling', 'fw' ),
+							'top_rated'    => __( 'Top Rated', 'fw' ),
+							'category'     => __( 'By Category', 'fw' ),
+						),
+						'value'   => 'recent',
+					),
+					'category'       => array(
+						'type'    => 'select',
+						'label'   => __( 'Category', 'fw' ),
+						'desc'    => __( 'With source "By Category" this picks the category; for other sources it further filters the results. "All Categories" applies no filter.', 'fw' ),
+						'choices' => $wc_cat_choices,
+						'value'   => '',
+					),
+					'posts_per_page' => array(
+						'type'            => 'text',
+						'label'           => __( 'Number of Products', 'fw' ),
+						'desc'            => __( 'How many products to show. Use -1 for all.', 'fw' ),
+						'value'           => '8',
+						'dynamic_content' => false,
+					),
+				),
+			),
+			'group_order'   => array(
+				'type'    => 'group',
+				'options' => array(
+					'orderby' => array(
+						'type'    => 'select',
+						'label'   => __( 'Order By', 'fw' ),
+						'desc'    => __( 'Best Selling / Top Rated / On Sale sources set their own ordering and ignore this.', 'fw' ),
+						'choices' => array(
+							'date'       => __( 'Date', 'fw' ),
+							'title'      => __( 'Title', 'fw' ),
+							'price'      => __( 'Price', 'fw' ),
+							'popularity' => __( 'Popularity (sales)', 'fw' ),
+							'rating'     => __( 'Average Rating', 'fw' ),
+							'menu_order' => __( 'Menu Order', 'fw' ),
+							'rand'       => __( 'Random', 'fw' ),
+						),
+						'value'   => 'date',
+					),
+					'order'   => array(
+						'type'    => 'select',
+						'label'   => __( 'Order', 'fw' ),
+						'choices' => array(
+							'DESC' => __( 'Descending', 'fw' ),
+							'ASC'  => __( 'Ascending', 'fw' ),
+						),
+						'value'   => 'DESC',
+					),
+				),
+			),
+			'group_display' => array(
+				'type'    => 'group',
+				'options' => array(
+					'show_sale_badge'  => upw_products_switch( __( 'Sale Badge', 'fw' ), __( 'Show a "Sale" badge on discounted products.', 'fw' ) ),
+					'show_rating'      => upw_products_switch( __( 'Star Rating', 'fw' ), __( 'Show the average star rating (when a product has reviews).', 'fw' ) ),
+					'show_price'       => upw_products_switch( __( 'Price', 'fw' ) ),
+					'show_add_to_cart' => upw_products_switch( __( 'Add to Cart Button', 'fw' ) ),
+				),
+			),
+		),
+	),
+
+	'tab_style' => array(
+		'title'   => __( 'Style', 'fw' ),
+		'type'    => 'tab',
+		'options' => array(
+			'group_grid' => array(
+				'type'    => 'group',
+				'options' => array(
+					'columns'     => array(
+						'type'    => 'select',
+						'label'   => __( 'Columns', 'fw' ),
+						'desc'    => __( 'Products per row on desktop (collapses on smaller screens).', 'fw' ),
+						'choices' => array( '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6' ),
+						'value'   => '4',
+					),
+					'gap'         => array(
+						'type'    => 'select',
+						'label'   => __( 'Gap', 'fw' ),
+						'choices' => array(
+							'sm' => __( 'Small', 'fw' ),
+							'md' => __( 'Medium', 'fw' ),
+							'lg' => __( 'Large', 'fw' ),
+						),
+						'value'   => 'md',
+					),
+					'image_ratio' => array(
+						'type'    => 'select',
+						'label'   => __( 'Image Ratio', 'fw' ),
+						'desc'    => __( 'Crop product images to a uniform aspect ratio, or keep their natural proportions.', 'fw' ),
+						'choices' => array(
+							'auto'      => __( 'Natural', 'fw' ),
+							'square'    => __( 'Square (1:1)', 'fw' ),
+							'portrait'  => __( 'Portrait (3:4)', 'fw' ),
+							'landscape' => __( 'Landscape (4:3)', 'fw' ),
+						),
+						'value'   => 'auto',
+					),
+					'alignment'   => function_exists( 'sc_alignment_field' )
+						? sc_alignment_field(
+							array(
+								'label'   => __( 'Text Alignment', 'fw' ),
+								'inherit' => true,
+								'desc'    => __( 'Alignment of the title / price / button inside each card. Inherit follows the theme.', 'fw' ),
+							)
+						)
+						: array(
+							'type'    => 'select',
+							'label'   => __( 'Text Alignment', 'fw' ),
+							'choices' => array(
+								''       => __( 'Inherit', 'fw' ),
+								'left'   => __( 'Left', 'fw' ),
+								'center' => __( 'Center', 'fw' ),
+								'right'  => __( 'Right', 'fw' ),
+							),
+							'value'   => '',
+						),
+				),
+			),
+		),
+	),
+
+	'tab_animation' => array(
+		'title'   => __( 'Animations', 'fw' ),
+		'type'    => 'tab',
+		'options' => function_exists( 'sc_get_animation_fields' ) ? sc_get_animation_fields() : array(),
+	),
+
+	'tab_advanced' => array(
+		'title'   => __( 'Advanced', 'fw' ),
+		'type'    => 'tab',
+		'options' => array(
+			'advanced_settings' => array(
+				'type'    => 'group',
+				'options' => function_exists( 'sc_get_advanced_tab' ) ? sc_get_advanced_tab() : array(),
+			),
+		),
+	),
+);

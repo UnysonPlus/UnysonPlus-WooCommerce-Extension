@@ -1,0 +1,140 @@
+/**
+ * Products element — frontend styles (UnysonPlus WooCommerce extension).
+ *
+ * Self-contained: renders a clean CSS-grid product layout and neutralizes
+ * WooCommerce's default float-based `ul.products` rules so the grid is even
+ * regardless of theme. Colors / typography inherit from the theme.
+ */
+
+/* ---- Grid ---------------------------------------------------------------- */
+.upw-products__grid {
+	display: grid;
+	grid-template-columns: repeat(var(--upw-cols, 4), minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/* Neutralize WooCommerce's float/clearfix on the shared ul.products element. */
+.upw-products__grid::before,
+.upw-products__grid::after {
+	display: none;
+	content: none;
+}
+.upw-products__grid li.product {
+	width: auto !important;
+	margin: 0 !important;
+	padding: 0;
+	float: none !important;
+	clear: none !important;
+}
+
+.upw-products--cols-2 { --upw-cols: 2; }
+.upw-products--cols-3 { --upw-cols: 3; }
+.upw-products--cols-4 { --upw-cols: 4; }
+.upw-products--cols-5 { --upw-cols: 5; }
+.upw-products--cols-6 { --upw-cols: 6; }
+
+/* ---- Gaps ---------------------------------------------------------------- */
+.upw-products--gap-sm .upw-products__grid { gap: 0.75rem; }
+.upw-products--gap-md .upw-products__grid { gap: 1.5rem; }
+.upw-products--gap-lg .upw-products__grid { gap: 2.5rem; }
+
+/* ---- Card ---------------------------------------------------------------- */
+.upw-product {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+.upw-product__link {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+}
+
+.upw-product__media {
+	display: block;
+	overflow: hidden;
+	margin-bottom: 0.75rem;
+}
+.upw-product__media img {
+	display: block;
+	width: 100%;
+	height: auto;
+	transition: transform 0.4s ease;
+}
+.upw-product__link:hover .upw-product__media img {
+	transform: scale(1.04);
+}
+
+/* Uniform image ratios (cover-crop). "auto" keeps natural proportions. */
+.upw-products--ratio-square .upw-product__media { aspect-ratio: 1 / 1; }
+.upw-products--ratio-portrait .upw-product__media { aspect-ratio: 3 / 4; }
+.upw-products--ratio-landscape .upw-product__media { aspect-ratio: 4 / 3; }
+.upw-products--ratio-square .upw-product__media img,
+.upw-products--ratio-portrait .upw-product__media img,
+.upw-products--ratio-landscape .upw-product__media img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.upw-product__title {
+	display: block;
+	font-size: 1rem;
+	line-height: 1.3;
+	margin-bottom: 0.35rem;
+}
+
+.upw-product__rating {
+	margin-bottom: 0.35rem;
+	font-size: 0.85rem;
+}
+
+.upw-product__price {
+	display: block;
+	margin-bottom: 0.6rem;
+	font-weight: 600;
+}
+.upw-product__price del { opacity: 0.55; font-weight: 400; margin-right: 0.35em; }
+.upw-product__price ins { text-decoration: none; }
+
+.upw-product__cart {
+	margin-top: auto;
+}
+
+/* ---- Sale badge ---------------------------------------------------------- */
+.upw-product__badge.onsale {
+	position: absolute;
+	top: 0.5rem;
+	left: 0.5rem;
+	z-index: 2;
+	margin: 0;
+	min-height: 0;
+	min-width: 0;
+	line-height: 1;
+	padding: 0.35em 0.6em;
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	color: #fff;
+	background: #111;
+	border-radius: 3px;
+}
+
+/* ---- Text alignment ------------------------------------------------------ */
+.upw-products--align-left  .upw-product { text-align: left; }
+.upw-products--align-center .upw-product { text-align: center; }
+.upw-products--align-right .upw-product { text-align: right; }
+.upw-products--align-center .upw-product__cart { display: flex; justify-content: center; }
+.upw-products--align-right .upw-product__cart { display: flex; justify-content: flex-end; }
+
+/* ---- Responsive ---------------------------------------------------------- */
+@media (max-width: 991px) {
+	.upw-products__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 575px) {
+	.upw-products__grid { grid-template-columns: minmax(0, 1fr); }
+}

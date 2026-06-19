@@ -1,0 +1,65 @@
+/**
+ * WooCommerce generic fallback styles (UnysonPlus WooCommerce extension).
+ *
+ * Enqueued ONLY when the active theme has not declared its own WooCommerce
+ * integration (see class-fw-extension-woocommerce.php::_action_theme_support_fallback).
+ * Goal: make a stock / WooCommerce-unaware theme render a tidy, even shop —
+ * NOT to impose a design. A WooCommerce-aware theme (e.g. unysonplus-theme)
+ * ships its own styles and this file never loads.
+ */
+
+/* Even, responsive product grid regardless of the theme's float widths. */
+.woocommerce ul.products,
+.woocommerce-page ul.products {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1.5rem;
+	margin: 0 0 2rem;
+	padding: 0;
+	list-style: none;
+}
+
+/* WooCommerce's clearfix pseudo-elements would otherwise become grid items
+   and push the first product out of the first cell. */
+.woocommerce ul.products::before,
+.woocommerce ul.products::after,
+.woocommerce-page ul.products::before,
+.woocommerce-page ul.products::after {
+	display: none;
+	content: none;
+}
+
+.woocommerce ul.products li.product,
+.woocommerce-page ul.products li.product {
+	width: auto !important;
+	margin: 0 !important;
+	float: none !important;
+	clear: none !important;
+}
+
+.woocommerce ul.products li.product a img {
+	width: 100%;
+	height: auto;
+	margin-bottom: 0.75rem;
+}
+
+@media (max-width: 991px) {
+	.woocommerce ul.products,
+	.woocommerce-page ul.products {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 575px) {
+	.woocommerce ul.products,
+	.woocommerce-page ul.products {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Keep WooCommerce notices readable. */
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-error {
+	margin-bottom: 1.5rem;
+}
