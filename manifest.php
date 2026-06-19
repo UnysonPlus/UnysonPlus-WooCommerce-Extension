@@ -11,13 +11,13 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.5';
+$manifest['version']     = '1.0.6';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 
 // Repository Info
-$manifest['github_update'] = 'UnysonPlus/UnysonPlus-Woocommerce-Extension';
-$manifest['github_repo']   = 'https://github.com/UnysonPlus/UnysonPlus-Woocommerce-Extension';
+$manifest['github_update'] = 'UnysonPlus/UnysonPlus-WooCommerce-Extension';
+$manifest['github_repo']   = 'https://github.com/UnysonPlus/UnysonPlus-WooCommerce-Extension';
 $manifest['github_branch'] = 'master';
 
 // Author Info
