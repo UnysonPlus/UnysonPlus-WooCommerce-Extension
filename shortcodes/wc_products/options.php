@@ -163,6 +163,7 @@ $options = array(
 						'dynamic_content' => false,
 					),
 					'show_stock'         => upw_products_switch( __( 'Stock Status', 'fw' ), __( 'Show "Out of stock" and low-stock ("Only N left") notices on cards.', 'fw' ), 'no' ),
+					'show_quick_view'    => upw_products_switch( __( 'Quick View', 'fw' ), __( 'Add a "Quick View" button that opens the product in a modal.', 'fw' ), 'no' ),
 					'show_rating'        => upw_products_switch( __( 'Star Rating', 'fw' ), __( 'Show the average star rating (when a product has reviews).', 'fw' ) ),
 					'show_price'         => upw_products_switch( __( 'Price', 'fw' ) ),
 					'show_add_to_cart'   => upw_products_switch( __( 'Add to Cart Button', 'fw' ) ),
@@ -193,6 +194,16 @@ $options = array(
 						'value'   => '4',
 					),
 					'carousel_arrows' => upw_products_switch( __( 'Carousel Arrows', 'fw' ), __( 'Show prev / next arrows on the Carousel layout.', 'fw' ), 'yes' ),
+					'pagination'  => array(
+						'type'    => 'select',
+						'label'   => __( 'Pagination', 'fw' ),
+						'desc'    => __( 'Grid layout only: add a "Load More" button to reveal more products via AJAX.', 'fw' ),
+						'choices' => array(
+							'none'      => __( 'None', 'fw' ),
+							'load_more' => __( 'Load More', 'fw' ),
+						),
+						'value'   => 'none',
+					),
 					'gap'         => array(
 						'type'    => 'select',
 						'label'   => __( 'Gap', 'fw' ),

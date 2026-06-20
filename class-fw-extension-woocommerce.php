@@ -64,6 +64,91 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		add_action( 'wp', array( $this, '_action_apply_shop_behavior' ) );
 		add_filter( 'woocommerce_enable_ajax_add_to_cart', array( $this, '_filter_ajax_add_to_cart' ) );
 		add_filter( 'woocommerce_sale_flash', array( $this, '_filter_sale_flash' ), 10, 3 );
+
+		// AJAX: Products Load More + Quick View.
+		add_action( 'wp_ajax_upw_wc_products_load_more', array( $this, '_ajax_load_more' ) );
+		add_action( 'wp_ajax_nopriv_upw_wc_products_load_more', array( $this, '_ajax_load_more' ) );
+		add_action( 'wp_ajax_upw_wc_quick_view', array( $this, '_ajax_quick_view' ) );
+		add_action( 'wp_ajax_nopriv_upw_wc_quick_view', array( $this, '_ajax_quick_view' ) );
+	}
+
+	/**
+	 * AJAX: return the next page of product cards for the Products grid.
+	 *
+	 * @internal
+	 */
+	public function _ajax_load_more() {
+		check_ajax_referer( 'upw_wc_products', 'nonce' );
+
+		if ( ! function_exists( 'upw_wc_products_resolve' ) ) {
+			wp_send_json_error();
+		}
+
+		$atts = isset( $_POST['atts'] ) ? json_decode( wp_unslash( $_POST['atts'] ), true ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( ! is_array( $atts ) ) {
+			wp_send_json_error();
+		}
+		$page = isset( $_POST['page'] ) ? max( 2, (int) $_POST['page'] ) : 2;
+
+		$r               = upw_wc_products_resolve( $atts );
+		$r['pagination'] = 'load_more';
+		$args            = upw_wc_products_query_args( $r, $page );
+		if ( $args === false ) {
+			wp_send_json_success( array( 'html' => '', 'has_more' => false ) );
+		}
+
+		$query = new WP_Query( $args );
+		$html  = '';
+		while ( $query->have_posts() ) {
+			$query->the_post();
+			$html .= upw_wc_products_card( wc_get_product( get_the_ID() ), $r );
+		}
+		wp_reset_postdata();
+
+		wp_send_json_success(
+			array(
+				'html'     => $html,
+				'has_more' => $page < (int) $query->max_num_pages,
+			)
+		);
+	}
+
+	/**
+	 * AJAX: return the Quick View contents for a product.
+	 *
+	 * @internal
+	 */
+	public function _ajax_quick_view() {
+		check_ajax_referer( 'upw_wc_products', 'nonce' );
+
+		$id      = isset( $_POST['product'] ) ? (int) $_POST['product'] : 0;
+		$product = $id ? wc_get_product( $id ) : null;
+		if ( ! $product instanceof WC_Product || $product->get_status() !== 'publish' ) {
+			wp_send_json_error();
+		}
+
+		$GLOBALS['post'] = get_post( $id );
+		setup_postdata( $GLOBALS['post'] );
+		$GLOBALS['product'] = $product;
+
+		ob_start();
+		?>
+		<div class="upw-qv__media"><?php echo $product->get_image( 'woocommerce_single' ); // phpcs:ignore ?></div>
+		<div class="upw-qv__summary">
+			<h2 class="upw-qv__title"><?php echo esc_html( $product->get_name() ); ?></h2>
+			<?php if ( (float) $product->get_average_rating() > 0 ) : ?>
+				<div class="upw-qv__rating"><?php echo wc_get_rating_html( $product->get_average_rating() ); // phpcs:ignore ?></div>
+			<?php endif; ?>
+			<div class="upw-qv__price"><?php echo $product->get_price_html(); // phpcs:ignore ?></div>
+			<div class="upw-qv__excerpt"><?php echo wp_kses_post( wpautop( $product->get_short_description() ) ); ?></div>
+			<?php woocommerce_template_single_add_to_cart(); ?>
+			<a class="upw-qv__link" href="<?php echo esc_url( $product->get_permalink() ); ?>"><?php esc_html_e( 'View full details', 'fw' ); ?></a>
+		</div>
+		<?php
+		$html = ob_get_clean();
+		wp_reset_postdata();
+
+		wp_send_json_success( array( 'html' => $html ) );
 	}
 
 	/**

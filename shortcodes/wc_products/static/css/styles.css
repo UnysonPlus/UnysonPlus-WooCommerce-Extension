@@ -208,3 +208,88 @@
 .upw-products__nav--prev { left: -0.6rem; }
 .upw-products__nav--next { right: -0.6rem; }
 .upw-products__nav:hover { background: #111; color: #fff; }
+
+/* ---- Quick View button (hover reveal over the card) ---------------------- */
+.upw-product__quickview {
+	position: absolute;
+	top: 30%;
+	left: 50%;
+	transform: translate(-50%, -50%) translateY(8px);
+	z-index: 3;
+	padding: 0.55em 1.1em;
+	border: 0;
+	border-radius: 3px;
+	background: rgba(17, 17, 17, 0.92);
+	color: #fff;
+	font-size: 0.74rem;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	cursor: pointer;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+.upw-product:hover .upw-product__quickview {
+	opacity: 1;
+	visibility: visible;
+	transform: translate(-50%, -50%);
+}
+.upw-product__quickview:hover { background: #000; }
+@media (hover: none) {
+	.upw-product__quickview { opacity: 1; visibility: visible; transform: translate(-50%, -50%); }
+}
+
+/* ---- Load More ----------------------------------------------------------- */
+.upw-products__more { margin-top: 1.75rem; text-align: center; }
+.upw-products__more-btn { cursor: pointer; }
+.upw-products__more-btn.is-loading { opacity: 0.6; pointer-events: none; }
+
+/* ---- Quick View modal ---------------------------------------------------- */
+.upw-qv {
+	position: fixed;
+	inset: 0;
+	z-index: 99999;
+	display: none;
+	align-items: flex-start;
+	justify-content: center;
+	padding: 2rem 0;
+}
+.upw-qv.is-open { display: flex; }
+.upw-qv__overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6); }
+.upw-qv__dialog {
+	position: relative;
+	z-index: 1;
+	width: calc(100% - 2rem);
+	max-width: 880px;
+	max-height: calc(100vh - 4rem);
+	overflow: auto;
+	background: #fff;
+	border-radius: 6px;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.upw-qv__close {
+	position: absolute;
+	top: 0.4rem;
+	right: 0.7rem;
+	z-index: 2;
+	border: 0;
+	background: transparent;
+	font-size: 1.9rem;
+	line-height: 1;
+	color: #555;
+	cursor: pointer;
+}
+.upw-qv__body {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1.5rem;
+	padding: 1.75rem;
+}
+.upw-qv__media img { width: 100%; height: auto; border-radius: 4px; }
+.upw-qv__title { margin: 0 0 0.5rem; }
+.upw-qv__price { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.75rem; }
+.upw-qv__excerpt { margin-bottom: 1rem; color: #444; }
+.upw-qv__link { display: inline-block; margin-top: 0.75rem; }
+.upw-qv__loading { padding: 3rem; text-align: center; grid-column: 1 / -1; }
+@media (max-width: 640px) { .upw-qv__body { grid-template-columns: 1fr; } }

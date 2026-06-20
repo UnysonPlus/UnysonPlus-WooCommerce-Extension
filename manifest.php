@@ -11,7 +11,7 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.12';
+$manifest['version']     = '1.0.13';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';
@@ -39,6 +39,13 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.0.13 - Products element: added AJAX "Load More" pagination and a "Quick
+ *          View" modal (image, price, rating, short description, add-to-cart,
+ *          and a full-details link; variable products supported). The grid's
+ *          query + card markup were extracted to includes/products-render.php
+ *          so the initial render, Load More and Quick View share identical
+ *          output.
+ *
  * 1.0.12 - Catalog polish + shop behavior settings. The Products element gained
  *          percentage sale badges and optional Featured / New / Out-of-stock
  *          badges, low-stock ("Only N left") notices, and two new sources:
