@@ -242,6 +242,13 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		$fragments['.upw-cart .upw-cart__total']         = '<span class="upw-cart__total">' . wp_kses_post( $total ) . '</span>';
 		$fragments['.upw-minicart .upw-minicart__count'] = '<span class="upw-minicart__count" aria-hidden="true">' . esc_html( $count ) . '</span>';
 
+		if ( function_exists( 'upw_wc_free_shipping_bar_html' ) ) {
+			$bar = upw_wc_free_shipping_bar_html();
+			if ( $bar !== '' ) {
+				$fragments['.upw-freeship .upw-freeship__inner'] = $bar;
+			}
+		}
+
 		return $fragments;
 	}
 
@@ -271,6 +278,8 @@ class FW_Extension_Woocommerce extends FW_Extension {
 					'wc_product_search',
 					'wc_mini_cart',
 					'wc_product_filters',
+					'wc_account',
+					'wc_free_shipping',
 				)
 			);
 		}

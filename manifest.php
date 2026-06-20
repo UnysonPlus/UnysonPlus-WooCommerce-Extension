@@ -11,7 +11,7 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.13';
+$manifest['version']     = '1.0.14';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';
@@ -39,6 +39,11 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.0.14 - Added two elements: Account (a header account link with a dropdown —
+ *          login form for guests, account menu + logout for logged-in users)
+ *          and Free Shipping Bar (a progress bar toward the free-shipping spend
+ *          threshold that updates live via cart fragments).
+ *
  * 1.0.13 - Products element: added AJAX "Load More" pagination and a "Quick
  *          View" modal (image, price, rating, short description, add-to-cart,
  *          and a full-details link; variable products supported). The grid's

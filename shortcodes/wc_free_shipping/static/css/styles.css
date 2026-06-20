@@ -1,0 +1,28 @@
+/**
+ * Free Shipping Bar element.
+ */
+.upw-freeship {
+	padding: 0.85rem 1rem;
+	background: rgba(45, 138, 78, 0.08);
+	border: 1px solid rgba(45, 138, 78, 0.2);
+	border-radius: 6px;
+}
+.upw-freeship__msg {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-size: 0.9rem;
+}
+.upw-freeship__msg.is-unlocked { color: #2d8a4e; font-weight: 600; }
+.upw-freeship__track {
+	display: block;
+	height: 8px;
+	border-radius: 4px;
+	background: rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+}
+.upw-freeship__fill {
+	display: block;
+	height: 100%;
+	background: #2d8a4e;
+	transition: width 0.4s ease;
+}
