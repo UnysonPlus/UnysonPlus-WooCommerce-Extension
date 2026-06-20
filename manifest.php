@@ -11,9 +11,10 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.9';
+$manifest['version']     = '1.0.10';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
+$manifest['thumbnail']   = 'thumbnail.svg';
 
 // Repository Info
 $manifest['github_update'] = 'UnysonPlus/UnysonPlus-WooCommerce-Extension';
