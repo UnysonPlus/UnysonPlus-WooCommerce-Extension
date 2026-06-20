@@ -7,11 +7,11 @@ $manifest = [];
 $manifest['name']        = __( 'WooCommerce', 'fw' );
 $manifest['slug']        = 'unysonplus-woocommerce';
 $manifest['description'] = __(
-	'Integrates WooCommerce with the Unyson+ framework. Makes any active theme WooCommerce-aware and (in later phases) adds page-builder shop elements, a settings page, and widgets. Inert until WooCommerce is installed and active.',
+	'Integrates WooCommerce with the Unyson+ framework. Makes any active theme WooCommerce-aware and adds a WooCommerce Elements tab to the page builder — product grids & carousels, single product, categories, add-to-cart, cart icon & mini-cart, the cart / checkout / account / order-tracking pages, product search and filters — plus a shop settings page. Inert until WooCommerce is installed and active.',
 	'fw'
 );
 
-$manifest['version']     = '1.0.10';
+$manifest['version']     = '1.0.11';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';
