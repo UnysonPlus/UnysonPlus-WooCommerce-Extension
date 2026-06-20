@@ -39,6 +39,16 @@ $show_rating  = $on( 'show_rating' );
 $show_price   = $on( 'show_price' );
 $show_atc     = $on( 'show_add_to_cart' );
 
+// Newer toggles default OFF when the att is absent (older saves).
+$opt = static function ( $key ) use ( $atts, $truthy ) {
+	return isset( $atts[ $key ] ) ? $truthy( $atts[ $key ] ) : false;
+};
+$badge_style    = ( isset( $atts['badge_style'] ) && $atts['badge_style'] === 'percent' ) ? 'percent' : 'text';
+$show_featured  = $opt( 'show_featured_badge' );
+$show_new       = $opt( 'show_new_badge' );
+$new_days       = isset( $atts['new_days'] ) ? max( 0, (int) $atts['new_days'] ) : 14;
+$show_stock     = $opt( 'show_stock' );
+
 $layout      = ( isset( $atts['layout'] ) && $atts['layout'] === 'carousel' ) ? 'carousel' : 'grid';
 $show_arrows = ! array_key_exists( 'carousel_arrows', $atts ) ? true : $truthy( $atts['carousel_arrows'] );
 
@@ -151,6 +161,26 @@ switch ( $source ) {
 		$args['orderby']        = 'post__in';
 		$args['posts_per_page'] = count( $id_list );
 		break;
+	case 'recently_viewed':
+		$viewed = empty( $_COOKIE['woocommerce_recently_viewed'] )
+			? array()
+			: array_filter( array_map( 'absint', explode( '|', wp_unslash( $_COOKIE['woocommerce_recently_viewed'] ) ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$viewed = array_reverse( $viewed ); // most-recent first
+		if ( empty( $viewed ) ) {
+			return;
+		}
+		$args['post__in'] = $viewed;
+		$args['orderby']  = 'post__in';
+		break;
+	case 'cross_sells':
+		$cross = ( function_exists( 'WC' ) && WC()->cart ) ? WC()->cart->get_cross_sells() : array();
+		$cross = array_filter( array_map( 'intval', (array) $cross ) );
+		if ( empty( $cross ) ) {
+			return;
+		}
+		$args['post__in'] = $cross;
+		$args['orderby']  = 'post__in';
+		break;
 	case 'category':
 	case 'recent':
 	default:
@@ -206,8 +236,29 @@ while ( $query->have_posts() ) {
 
 	echo '<a class="upw-product__link" href="' . esc_url( get_permalink() ) . '">';
 
+	$badges = array();
 	if ( $show_badge && $product->is_on_sale() ) {
-		echo '<span class="upw-product__badge onsale">' . esc_html__( 'Sale', 'fw' ) . '</span>';
+		$sale_label = esc_html__( 'Sale', 'fw' );
+		if ( $badge_style === 'percent' ) {
+			$regular = (float) $product->get_regular_price();
+			$sale    = (float) $product->get_sale_price();
+			if ( $regular > 0 && $sale > 0 && $sale < $regular ) {
+				$sale_label = '-' . (int) round( ( $regular - $sale ) / $regular * 100 ) . '%';
+			}
+		}
+		$badges[] = '<span class="upw-product__badge onsale">' . $sale_label . '</span>';
+	}
+	if ( $show_featured && $product->is_featured() ) {
+		$badges[] = '<span class="upw-product__badge featured">' . esc_html__( 'Featured', 'fw' ) . '</span>';
+	}
+	if ( $show_new && $new_days > 0 && get_post_time( 'U', true, $product->get_id() ) > ( time() - $new_days * DAY_IN_SECONDS ) ) {
+		$badges[] = '<span class="upw-product__badge is-new">' . esc_html__( 'New', 'fw' ) . '</span>';
+	}
+	if ( $show_stock && ! $product->is_in_stock() ) {
+		$badges[] = '<span class="upw-product__badge out-of-stock">' . esc_html__( 'Out of stock', 'fw' ) . '</span>';
+	}
+	if ( ! empty( $badges ) ) {
+		echo '<span class="upw-product__badges">' . implode( '', $badges ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	echo '<span class="upw-product__media">';
@@ -228,6 +279,18 @@ while ( $query->have_posts() ) {
 		$price_html = $product->get_price_html();
 		if ( $price_html ) {
 			echo '<div class="upw-product__price">' . wp_kses_post( $price_html ) . '</div>';
+		}
+	}
+
+	if ( $show_stock && $product->is_in_stock() && $product->managing_stock() ) {
+		$qty = $product->get_stock_quantity();
+		$low = $product->get_low_stock_amount();
+		if ( $low === '' || $low === null ) {
+			$low = (int) get_option( 'woocommerce_notify_low_stock_amount', 2 );
+		}
+		$low = max( 1, (int) $low );
+		if ( $qty !== null && $qty > 0 && $qty <= $low ) {
+			echo '<div class="upw-product__stock low">' . sprintf( esc_html__( 'Only %d left', 'fw' ), (int) $qty ) . '</div>';
 		}
 	}
 

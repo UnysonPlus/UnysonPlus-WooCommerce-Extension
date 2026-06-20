@@ -11,7 +11,7 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.11';
+$manifest['version']     = '1.0.12';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';
@@ -39,6 +39,14 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.0.12 - Catalog polish + shop behavior settings. The Products element gained
+ *          percentage sale badges and optional Featured / New / Out-of-stock
+ *          badges, low-stock ("Only N left") notices, and two new sources:
+ *          Recently Viewed and Cross-sells. New "Shop Behavior" settings:
+ *          Catalog Mode (hide prices + add-to-cart store-wide), Sale Badge Style
+ *          (text or percent), AJAX add-to-cart toggle, shop breadcrumb toggle,
+ *          and product-gallery zoom / lightbox / slider toggles.
+ *
  * 1.0.9 - Added three utility elements (WooCommerce Elements tab): Product
  *         Search (a product-scoped search form), Mini Cart (an icon with a
  *         live-updating dropdown of cart contents + subtotal), and Product

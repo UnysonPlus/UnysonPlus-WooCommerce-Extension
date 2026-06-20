@@ -57,6 +57,85 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		// Live-refresh the Cart element's count / total via WooCommerce AJAX
 		// fragments (works for any [wc_cart_link] currently in the DOM).
 		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, '_filter_cart_fragments' ) );
+
+		// Shop behavior settings (catalog mode, breadcrumb, badge style, AJAX cart,
+		// product-gallery features).
+		add_action( 'after_setup_theme', array( $this, '_action_apply_gallery_settings' ), 100 );
+		add_action( 'wp', array( $this, '_action_apply_shop_behavior' ) );
+		add_filter( 'woocommerce_enable_ajax_add_to_cart', array( $this, '_filter_ajax_add_to_cart' ) );
+		add_filter( 'woocommerce_sale_flash', array( $this, '_filter_sale_flash' ), 10, 3 );
+	}
+
+	/**
+	 * Remove product-gallery theme support for any feature disabled in settings.
+	 * Runs after the theme (p10) and the support fallback (p99) have declared theirs.
+	 *
+	 * @internal
+	 */
+	public function _action_apply_gallery_settings() {
+		$map = array(
+			'gallery_zoom'     => 'wc-product-gallery-zoom',
+			'gallery_lightbox' => 'wc-product-gallery-lightbox',
+			'gallery_slider'   => 'wc-product-gallery-slider',
+		);
+		foreach ( $map as $key => $feature ) {
+			$value = $this->get_setting( $key, null );
+			if ( $value !== null && ! upw_wc_truthy( $value ) ) {
+				remove_theme_support( $feature );
+			}
+		}
+	}
+
+	/**
+	 * Apply catalog mode + breadcrumb toggle once the main query is known.
+	 *
+	 * @internal
+	 */
+	public function _action_apply_shop_behavior() {
+		if ( $this->get_setting( 'show_breadcrumb', 'yes' ) !== 'yes' ) {
+			remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
+		}
+
+		if ( upw_wc_truthy( $this->get_setting( 'catalog_mode', 'no' ) ) ) {
+			remove_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10 );
+			remove_action( 'woocommerce_after_shop_loop_item_title', 'woocommerce_template_loop_price', 10 );
+			remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );
+			remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
+		}
+	}
+
+	/**
+	 * Override AJAX add-to-cart on shop archives from the setting (when set).
+	 *
+	 * @param bool $enabled
+	 * @return bool
+	 * @internal
+	 */
+	public function _filter_ajax_add_to_cart( $enabled ) {
+		$value = $this->get_setting( 'ajax_add_to_cart', null );
+		return $value === null ? $enabled : upw_wc_truthy( $value );
+	}
+
+	/**
+	 * Show the discount percentage in the sale flash when the setting asks for it.
+	 *
+	 * @param string $html
+	 * @param WP_Post $post
+	 * @param WC_Product $product
+	 * @return string
+	 * @internal
+	 */
+	public function _filter_sale_flash( $html, $post, $product ) {
+		if ( $this->get_setting( 'sale_badge_style', 'text' ) !== 'percent' || ! $product instanceof WC_Product ) {
+			return $html;
+		}
+		$regular = (float) $product->get_regular_price();
+		$sale    = (float) $product->get_sale_price();
+		if ( $regular > 0 && $sale > 0 && $sale < $regular ) {
+			$pct = (int) round( ( $regular - $sale ) / $regular * 100 );
+			return '<span class="onsale">-' . $pct . '%</span>';
+		}
+		return $html;
 	}
 
 	/**

@@ -107,24 +107,46 @@
 	margin-top: auto;
 }
 
-/* ---- Sale badge ---------------------------------------------------------- */
-.upw-product__badge.onsale {
+/* ---- Badges -------------------------------------------------------------- */
+.upw-product__badges {
 	position: absolute;
 	top: 0.5rem;
 	left: 0.5rem;
 	z-index: 2;
-	margin: 0;
-	min-height: 0;
-	min-width: 0;
-	line-height: 1;
-	padding: 0.35em 0.6em;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.3rem;
+}
+/* High specificity + !important on shape/position to defeat WooCommerce's
+   circular span.onsale styling, so every badge reads as a flat chip. */
+.upw-products .upw-product__badges .upw-product__badge {
+	position: static !important;
+	margin: 0 !important;
+	min-height: 0 !important;
+	min-width: 0 !important;
+	width: auto !important;
+	height: auto !important;
+	line-height: 1 !important;
+	padding: 0.35em 0.6em !important;
 	font-size: 0.72rem;
 	font-weight: 600;
 	letter-spacing: 0.03em;
 	text-transform: uppercase;
 	color: #fff;
 	background: #111;
-	border-radius: 3px;
+	border-radius: 3px !important;
+}
+.upw-products .upw-product__badges .upw-product__badge.featured     { background: #c79a3a; }
+.upw-products .upw-product__badges .upw-product__badge.is-new       { background: #2d8a4e; }
+.upw-products .upw-product__badges .upw-product__badge.out-of-stock { background: #6b6b6b; }
+
+/* Low-stock note near the price. */
+.upw-product__stock.low {
+	margin-bottom: 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: #c0392b;
 }
 
 /* ---- Text alignment ------------------------------------------------------ */

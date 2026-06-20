@@ -22,6 +22,21 @@ $cols_choices = array(
 	'6' => '6',
 );
 
+// Predictable yes/no switch (stored value is always 'yes' or 'no').
+$sw = function ( $label, $desc = '', $value = 'no' ) {
+	if ( function_exists( 'upw_wc_switch' ) ) {
+		return upw_wc_switch( $label, $desc, $value );
+	}
+	return array(
+		'type'         => 'switch',
+		'label'        => $label,
+		'desc'         => $desc,
+		'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),
+		'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+		'value'        => $value,
+	);
+};
+
 $options = array(
 
 	'catalog_box' => array(
@@ -80,6 +95,34 @@ $options = array(
 						'type'  => 'text',
 						'value' => '3',
 					),
+					'gallery_zoom'              => $sw( __( 'Gallery Zoom', 'fw' ), __( 'Magnify the product image on hover.', 'fw' ), 'yes' ),
+					'gallery_lightbox'          => $sw( __( 'Gallery Lightbox', 'fw' ), __( 'Open product images in a fullscreen lightbox.', 'fw' ), 'yes' ),
+					'gallery_slider'            => $sw( __( 'Gallery Slider', 'fw' ), __( 'Use a thumbnail slider for the product gallery.', 'fw' ), 'yes' ),
+				),
+			),
+		),
+	),
+
+	'behavior_box' => array(
+		'title'   => __( 'Shop Behavior', 'fw' ),
+		'type'    => 'box',
+		'options' => array(
+			'group_behavior' => array(
+				'type'    => 'group',
+				'options' => array(
+					'catalog_mode'     => $sw( __( 'Catalog Mode', 'fw' ), __( 'Hide prices and add-to-cart buttons across the shop (turn the store into a lookbook).', 'fw' ), 'no' ),
+					'sale_badge_style' => array(
+						'label'   => __( 'Sale Badge Style', 'fw' ),
+						'desc'    => __( 'How the "Sale" flash shows on shop / product pages.', 'fw' ),
+						'type'    => 'select',
+						'choices' => array(
+							'text'    => __( 'Text ("Sale")', 'fw' ),
+							'percent' => __( 'Percent ("-25%")', 'fw' ),
+						),
+						'value'   => 'text',
+					),
+					'ajax_add_to_cart' => $sw( __( 'AJAX Add to Cart', 'fw' ), __( 'Add simple products to the cart from shop archives without a page reload.', 'fw' ), 'yes' ),
+					'show_breadcrumb'  => $sw( __( 'Shop Breadcrumb', 'fw' ), __( 'Show the WooCommerce breadcrumb above shop / product content.', 'fw' ), 'yes' ),
 				),
 			),
 		),
