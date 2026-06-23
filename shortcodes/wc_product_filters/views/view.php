@@ -41,9 +41,9 @@ if ( $type === 'attribute' ) {
 }
 
 $args = array(
-	'before_widget' => '<div class="upw-product-filters widget">',
+	'before_widget' => '<div class="upwc-product-filters widget">',
 	'after_widget'  => '</div>',
-	'before_title'  => '<h3 class="upw-product-filters__title">',
+	'before_title'  => '<h3 class="upwc-product-filters__title">',
 	'after_title'   => '</h3>',
 );
 

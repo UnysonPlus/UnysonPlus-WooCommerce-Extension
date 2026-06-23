@@ -24,8 +24,8 @@ $cols_choices = array(
 
 // Predictable yes/no switch (stored value is always 'yes' or 'no').
 $sw = function ( $label, $desc = '', $value = 'no' ) {
-	if ( function_exists( 'upw_wc_switch' ) ) {
-		return upw_wc_switch( $label, $desc, $value );
+	if ( function_exists( 'upwc_wc_switch' ) ) {
+		return upwc_wc_switch( $label, $desc, $value );
 	}
 	return array(
 		'type'         => 'switch',

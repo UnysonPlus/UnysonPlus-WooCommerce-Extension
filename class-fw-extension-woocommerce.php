@@ -39,6 +39,15 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		// applies even on the early-return path below.
 		add_filter( 'fw_ext_shortcodes_disable_shortcodes', array( $this, '_filter_disable_shortcodes' ) );
 
+		// Dependency notice: this extension needs the WooCommerce PLUGIN. When the
+		// extension is active but WooCommerce isn't, tell the admin to install /
+		// activate it (the extension is otherwise inert). Registered before the
+		// early return so it shows on exactly that misconfiguration.
+		if ( is_admin() && ! class_exists( 'WooCommerce' ) ) {
+			add_action( 'admin_notices', array( $this, '_admin_notice_missing_woocommerce' ) );
+			add_action( 'network_admin_notices', array( $this, '_admin_notice_missing_woocommerce' ) );
+		}
+
 		// Completely inert without WooCommerce — the theme / site is unaffected.
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			return;
@@ -66,10 +75,41 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		add_filter( 'woocommerce_sale_flash', array( $this, '_filter_sale_flash' ), 10, 3 );
 
 		// AJAX: Products Load More + Quick View.
-		add_action( 'wp_ajax_upw_wc_products_load_more', array( $this, '_ajax_load_more' ) );
-		add_action( 'wp_ajax_nopriv_upw_wc_products_load_more', array( $this, '_ajax_load_more' ) );
-		add_action( 'wp_ajax_upw_wc_quick_view', array( $this, '_ajax_quick_view' ) );
-		add_action( 'wp_ajax_nopriv_upw_wc_quick_view', array( $this, '_ajax_quick_view' ) );
+		add_action( 'wp_ajax_upwc_wc_products_load_more', array( $this, '_ajax_load_more' ) );
+		add_action( 'wp_ajax_nopriv_upwc_wc_products_load_more', array( $this, '_ajax_load_more' ) );
+		add_action( 'wp_ajax_upwc_wc_quick_view', array( $this, '_ajax_quick_view' ) );
+		add_action( 'wp_ajax_nopriv_upwc_wc_quick_view', array( $this, '_ajax_quick_view' ) );
+	}
+
+	/**
+	 * Admin notice shown when this extension is active but the WooCommerce plugin
+	 * is missing — with a one-click Install or Activate action depending on whether
+	 * WooCommerce is already installed. Uses self_admin_url() so it works in both
+	 * single-site and network admin.
+	 *
+	 * @internal
+	 */
+	public function _admin_notice_missing_woocommerce() {
+		if ( class_exists( 'WooCommerce' ) || ! current_user_can( 'activate_plugins' ) ) {
+			return;
+		}
+
+		$installed = file_exists( WP_PLUGIN_DIR . '/woocommerce/woocommerce.php' );
+		if ( $installed ) {
+			$url   = self_admin_url( 'plugins.php' );
+			$label = __( 'Activate WooCommerce', 'fw' );
+			$msg   = __( 'is active, but the WooCommerce plugin is installed yet not activated. Activate WooCommerce to use the shop features.', 'fw' );
+		} else {
+			$url   = self_admin_url( 'plugin-install.php?tab=search&type=term&s=WooCommerce' );
+			$label = __( 'Install WooCommerce', 'fw' );
+			$msg   = __( 'is active, but the WooCommerce plugin is not installed. Install and activate WooCommerce to use the shop features.', 'fw' );
+		}
+
+		echo '<div class="notice notice-warning"><p>'
+			. '<strong>' . esc_html__( 'UnysonPlus WooCommerce extension', 'fw' ) . '</strong> '
+			. esc_html( $msg )
+			. ' <a class="button button-small" href="' . esc_url( $url ) . '">' . esc_html( $label ) . '</a>'
+			. '</p></div>';
 	}
 
 	/**
@@ -78,9 +118,9 @@ class FW_Extension_Woocommerce extends FW_Extension {
 	 * @internal
 	 */
 	public function _ajax_load_more() {
-		check_ajax_referer( 'upw_wc_products', 'nonce' );
+		check_ajax_referer( 'upwc_wc_products', 'nonce' );
 
-		if ( ! function_exists( 'upw_wc_products_resolve' ) ) {
+		if ( ! function_exists( 'upwc_wc_products_resolve' ) ) {
 			wp_send_json_error();
 		}
 
@@ -90,9 +130,9 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		}
 		$page = isset( $_POST['page'] ) ? max( 2, (int) $_POST['page'] ) : 2;
 
-		$r               = upw_wc_products_resolve( $atts );
+		$r               = upwc_wc_products_resolve( $atts );
 		$r['pagination'] = 'load_more';
-		$args            = upw_wc_products_query_args( $r, $page );
+		$args            = upwc_wc_products_query_args( $r, $page );
 		if ( $args === false ) {
 			wp_send_json_success( array( 'html' => '', 'has_more' => false ) );
 		}
@@ -101,7 +141,7 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		$html  = '';
 		while ( $query->have_posts() ) {
 			$query->the_post();
-			$html .= upw_wc_products_card( wc_get_product( get_the_ID() ), $r );
+			$html .= upwc_wc_products_card( wc_get_product( get_the_ID() ), $r );
 		}
 		wp_reset_postdata();
 
@@ -119,7 +159,7 @@ class FW_Extension_Woocommerce extends FW_Extension {
 	 * @internal
 	 */
 	public function _ajax_quick_view() {
-		check_ajax_referer( 'upw_wc_products', 'nonce' );
+		check_ajax_referer( 'upwc_wc_products', 'nonce' );
 
 		$id      = isset( $_POST['product'] ) ? (int) $_POST['product'] : 0;
 		$product = $id ? wc_get_product( $id ) : null;
@@ -133,16 +173,16 @@ class FW_Extension_Woocommerce extends FW_Extension {
 
 		ob_start();
 		?>
-		<div class="upw-qv__media"><?php echo $product->get_image( 'woocommerce_single' ); // phpcs:ignore ?></div>
-		<div class="upw-qv__summary">
-			<h2 class="upw-qv__title"><?php echo esc_html( $product->get_name() ); ?></h2>
+		<div class="upwc-qv__media"><?php echo $product->get_image( 'woocommerce_single' ); // phpcs:ignore ?></div>
+		<div class="upwc-qv__summary">
+			<h2 class="upwc-qv__title"><?php echo esc_html( $product->get_name() ); ?></h2>
 			<?php if ( (float) $product->get_average_rating() > 0 ) : ?>
-				<div class="upw-qv__rating"><?php echo wc_get_rating_html( $product->get_average_rating() ); // phpcs:ignore ?></div>
+				<div class="upwc-qv__rating"><?php echo wc_get_rating_html( $product->get_average_rating() ); // phpcs:ignore ?></div>
 			<?php endif; ?>
-			<div class="upw-qv__price"><?php echo $product->get_price_html(); // phpcs:ignore ?></div>
-			<div class="upw-qv__excerpt"><?php echo wp_kses_post( wpautop( $product->get_short_description() ) ); ?></div>
+			<div class="upwc-qv__price"><?php echo $product->get_price_html(); // phpcs:ignore ?></div>
+			<div class="upwc-qv__excerpt"><?php echo wp_kses_post( wpautop( $product->get_short_description() ) ); ?></div>
 			<?php woocommerce_template_single_add_to_cart(); ?>
-			<a class="upw-qv__link" href="<?php echo esc_url( $product->get_permalink() ); ?>"><?php esc_html_e( 'View full details', 'fw' ); ?></a>
+			<a class="upwc-qv__link" href="<?php echo esc_url( $product->get_permalink() ); ?>"><?php esc_html_e( 'View full details', 'fw' ); ?></a>
 		</div>
 		<?php
 		$html = ob_get_clean();
@@ -165,7 +205,7 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		);
 		foreach ( $map as $key => $feature ) {
 			$value = $this->get_setting( $key, null );
-			if ( $value !== null && ! upw_wc_truthy( $value ) ) {
+			if ( $value !== null && ! upwc_wc_truthy( $value ) ) {
 				remove_theme_support( $feature );
 			}
 		}
@@ -181,7 +221,7 @@ class FW_Extension_Woocommerce extends FW_Extension {
 			remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
 		}
 
-		if ( upw_wc_truthy( $this->get_setting( 'catalog_mode', 'no' ) ) ) {
+		if ( upwc_wc_truthy( $this->get_setting( 'catalog_mode', 'no' ) ) ) {
 			remove_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10 );
 			remove_action( 'woocommerce_after_shop_loop_item_title', 'woocommerce_template_loop_price', 10 );
 			remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );
@@ -198,7 +238,7 @@ class FW_Extension_Woocommerce extends FW_Extension {
 	 */
 	public function _filter_ajax_add_to_cart( $enabled ) {
 		$value = $this->get_setting( 'ajax_add_to_cart', null );
-		return $value === null ? $enabled : upw_wc_truthy( $value );
+		return $value === null ? $enabled : upwc_wc_truthy( $value );
 	}
 
 	/**
@@ -238,14 +278,14 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		$count = (int) WC()->cart->get_cart_contents_count();
 		$total = WC()->cart->get_cart_total();
 
-		$fragments['.upw-cart .upw-cart__count']         = '<span class="upw-cart__count" aria-hidden="true">' . esc_html( $count ) . '</span>';
-		$fragments['.upw-cart .upw-cart__total']         = '<span class="upw-cart__total">' . wp_kses_post( $total ) . '</span>';
-		$fragments['.upw-minicart .upw-minicart__count'] = '<span class="upw-minicart__count" aria-hidden="true">' . esc_html( $count ) . '</span>';
+		$fragments['.upwc-cart .upwc-cart__count']         = '<span class="upwc-cart__count" aria-hidden="true">' . esc_html( $count ) . '</span>';
+		$fragments['.upwc-cart .upwc-cart__total']         = '<span class="upwc-cart__total">' . wp_kses_post( $total ) . '</span>';
+		$fragments['.upwc-minicart .upwc-minicart__count'] = '<span class="upwc-minicart__count" aria-hidden="true">' . esc_html( $count ) . '</span>';
 
-		if ( function_exists( 'upw_wc_free_shipping_bar_html' ) ) {
-			$bar = upw_wc_free_shipping_bar_html();
+		if ( function_exists( 'upwc_wc_free_shipping_bar_html' ) ) {
+			$bar = upwc_wc_free_shipping_bar_html();
 			if ( $bar !== '' ) {
-				$fragments['.upw-freeship .upw-freeship__inner'] = $bar;
+				$fragments['.upwc-freeship .upwc-freeship__inner'] = $bar;
 			}
 		}
 

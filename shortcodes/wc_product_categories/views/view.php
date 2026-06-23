@@ -16,7 +16,7 @@ $orderby    = isset( $atts['orderby'] ) ? preg_replace( '/[^a-z_]/', '', (string
 $order      = ( isset( $atts['order'] ) && strtoupper( (string) $atts['order'] ) === 'DESC' ) ? 'DESC' : 'ASC';
 $parent     = isset( $atts['parent'] ) ? trim( (string) $atts['parent'] ) : '';
 $ids        = isset( $atts['ids'] ) ? preg_replace( '/[^0-9,]/', '', (string) $atts['ids'] ) : '';
-$hide_empty = ! isset( $atts['hide_empty'] ) || ( function_exists( 'upw_wc_truthy' ) ? upw_wc_truthy( $atts['hide_empty'] ) : $atts['hide_empty'] === 'yes' );
+$hide_empty = ! isset( $atts['hide_empty'] ) || ( function_exists( 'upwc_wc_truthy' ) ? upwc_wc_truthy( $atts['hide_empty'] ) : $atts['hide_empty'] === 'yes' );
 
 $sc  = '[product_categories';
 $sc .= ' columns="' . $columns . '"';

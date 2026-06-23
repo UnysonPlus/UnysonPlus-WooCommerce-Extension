@@ -16,7 +16,7 @@ works in normal content too. `wc_`-prefixed to avoid WooCommerce's core
 
 ## Live updates
 
-The count / total carry classes (`.upw-cart__count`, `.upw-cart__total`) that the
+The count / total carry classes (`.upwc-cart__count`, `.upwc-cart__total`) that the
 extension's `woocommerce_add_to_cart_fragments` filter
 (`class-fw-extension-woocommerce.php::_filter_cart_fragments`) refreshes via
 WooCommerce's `wc-cart-fragments` script (enqueued in `static.php`). So adding a
@@ -39,16 +39,16 @@ Plus shared **Animations** / **Advanced** tabs (wrapper id/class via
 
 ## Rendering
 
-`<a class="upw-cart" href="{cart}"> [label] <span class="upw-cart__icon">{svg}
-<span class="upw-cart__count">N</span></span> [<span class="upw-cart__total">…]</a>`.
+`<a class="upwc-cart" href="{cart}"> [label] <span class="upwc-cart__icon">{svg}
+<span class="upwc-cart__count">N</span></span> [<span class="upwc-cart__total">…]</a>`.
 Icons are inline stroke SVGs using `currentColor`. The badge uses a fixed accent
-(`--upw-cart-badge-bg`/`-fg` custom props, overridable) so it stays visible on
+(`--upwc-cart-badge-bg`/`-fg` custom props, overridable) so it stays visible on
 light- or dark-text headers.
 
 ## Pitfalls
 
 1. **Fragment selectors must match the DOM** — `_filter_cart_fragments` keys on
-   `.upw-cart .upw-cart__count` / `.upw-cart .upw-cart__total`; the view must keep
+   `.upwc-cart .upwc-cart__count` / `.upwc-cart .upwc-cart__total`; the view must keep
    those classes.
 2. **Inert without WooCommerce** — `view.php` bails on `! class_exists('WooCommerce')`;
    also disabled from the builder via `fw_ext_shortcodes_disable_shortcodes`.

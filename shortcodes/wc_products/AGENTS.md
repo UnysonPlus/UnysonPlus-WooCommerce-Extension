@@ -56,11 +56,11 @@ sale → `wc_get_product_ids_on_sale()`, best_selling/top_rated → `total_sales
 `_wc_average_rating` meta order). Markup:
 
 ```
-.upw-products.upw-products--gap-*.upw-products--ratio-*[.upw-products--align-*]
-  ul.products.upw-products__grid.upw-products--cols-N
-    li.product.upw-product
-      a.upw-product__link  (badge + media + title)
-      .upw-product__rating .upw-product__price .upw-product__cart
+.upwc-products.upwc-products--gap-*.upwc-products--ratio-*[.upwc-products--align-*]
+  ul.products.upwc-products__grid.upwc-products--cols-N
+    li.product.upwc-product
+      a.upwc-product__link  (badge + media + title)
+      .upwc-product__rating .upwc-product__price .upwc-product__cart
 ```
 
 `styles.css` lays this out as CSS grid and **neutralizes WooCommerce's float

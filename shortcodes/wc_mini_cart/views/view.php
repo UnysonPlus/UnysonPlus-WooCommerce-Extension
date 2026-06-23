@@ -13,7 +13,7 @@ if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'WC' ) || ! function_
 
 $icon_key = isset( $atts['icon'] ) ? (string) $atts['icon'] : 'bag';
 $trigger  = ( isset( $atts['trigger'] ) && $atts['trigger'] === 'hover' ) ? 'hover' : 'click';
-$truthy   = function_exists( 'upw_wc_truthy' ) ? 'upw_wc_truthy' : static function ( $v ) { return $v === 'yes' || $v === true; };
+$truthy   = function_exists( 'upwc_wc_truthy' ) ? 'upwc_wc_truthy' : static function ( $v ) { return $v === 'yes' || $v === true; };
 $show_count = ! isset( $atts['show_count'] ) || call_user_func( $truthy, $atts['show_count'] );
 
 $cart  = WC()->cart;
@@ -26,15 +26,15 @@ $icons = array(
 );
 $icon_svg = isset( $icons[ $icon_key ] ) ? $icons[ $icon_key ] : $icons['bag'];
 ?>
-<div class="upw-minicart" data-trigger="<?php echo esc_attr( $trigger ); ?>">
-	<a class="upw-minicart__toggle" href="<?php echo esc_url( wc_get_cart_url() ); ?>" aria-haspopup="true" aria-expanded="false" aria-label="<?php esc_attr_e( 'View cart', 'fw' ); ?>">
-		<span class="upw-minicart__icon"><?php echo $icon_svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+<div class="upwc-minicart" data-trigger="<?php echo esc_attr( $trigger ); ?>">
+	<a class="upwc-minicart__toggle" href="<?php echo esc_url( wc_get_cart_url() ); ?>" aria-haspopup="true" aria-expanded="false" aria-label="<?php esc_attr_e( 'View cart', 'fw' ); ?>">
+		<span class="upwc-minicart__icon"><?php echo $icon_svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			<?php if ( $show_count ) : ?>
-				<span class="upw-minicart__count" aria-hidden="true"><?php echo esc_html( $count ); ?></span>
+				<span class="upwc-minicart__count" aria-hidden="true"><?php echo esc_html( $count ); ?></span>
 			<?php endif; ?>
 		</span>
 	</a>
-	<div class="upw-minicart__panel" aria-hidden="true">
+	<div class="upwc-minicart__panel" aria-hidden="true">
 		<div class="widget_shopping_cart_content">
 			<?php woocommerce_mini_cart(); ?>
 		</div>

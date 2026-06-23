@@ -10,13 +10,13 @@ if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'wc_get_page_permalin
 	return;
 }
 
-$truthy     = function_exists( 'upw_wc_truthy' ) ? 'upw_wc_truthy' : static function ( $v ) { return $v === 'yes' || $v === true; };
+$truthy     = function_exists( 'upwc_wc_truthy' ) ? 'upwc_wc_truthy' : static function ( $v ) { return $v === 'yes' || $v === true; };
 $show_label = ! isset( $atts['show_label'] ) || call_user_func( $truthy, $atts['show_label'] );
 $trigger    = ( isset( $atts['trigger'] ) && $atts['trigger'] === 'hover' ) ? 'hover' : 'click';
 $logged_in  = is_user_logged_in();
 $my_account = wc_get_page_permalink( 'myaccount' );
 
-$icon = '<svg class="upw-account__icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>';
+$icon = '<svg class="upwc-account__icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>';
 
 if ( $logged_in ) {
 	$user  = wp_get_current_user();
@@ -25,16 +25,16 @@ if ( $logged_in ) {
 	$label = __( 'Login', 'fw' );
 }
 ?>
-<div class="upw-account" data-trigger="<?php echo esc_attr( $trigger ); ?>">
-	<a class="upw-account__toggle" href="<?php echo esc_url( $my_account ?: '#' ); ?>" aria-haspopup="true" aria-expanded="false">
+<div class="upwc-account" data-trigger="<?php echo esc_attr( $trigger ); ?>">
+	<a class="upwc-account__toggle" href="<?php echo esc_url( $my_account ?: '#' ); ?>" aria-haspopup="true" aria-expanded="false">
 		<?php echo $icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		<?php if ( $show_label ) : ?>
-			<span class="upw-account__label"><?php echo $logged_in ? esc_html( sprintf( __( 'Hi, %s', 'fw' ), $label ) ) : esc_html( $label ); ?></span>
+			<span class="upwc-account__label"><?php echo $logged_in ? esc_html( sprintf( __( 'Hi, %s', 'fw' ), $label ) ) : esc_html( $label ); ?></span>
 		<?php endif; ?>
 	</a>
-	<div class="upw-account__panel" aria-hidden="true">
+	<div class="upwc-account__panel" aria-hidden="true">
 		<?php if ( $logged_in ) : ?>
-			<ul class="upw-account__menu">
+			<ul class="upwc-account__menu">
 				<?php
 				foreach ( wc_get_account_menu_items() as $endpoint => $menu_label ) {
 					printf(
@@ -46,13 +46,13 @@ if ( $logged_in ) {
 				?>
 			</ul>
 		<?php else : ?>
-			<div class="upw-account__login">
+			<div class="upwc-account__login">
 				<?php
 				if ( function_exists( 'woocommerce_login_form' ) ) {
 					woocommerce_login_form( array( 'redirect' => $my_account ) );
 				}
 				?>
-				<p class="upw-account__register">
+				<p class="upwc-account__register">
 					<a href="<?php echo esc_url( $my_account ?: '#' ); ?>"><?php esc_html_e( 'Create an account', 'fw' ); ?></a>
 				</p>
 			</div>

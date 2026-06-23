@@ -44,10 +44,10 @@ $icon_svg = isset( $icons[ $icon ] ) ? $icons[ $icon ] : '';
 
 // Wrapper attrs (Advanced tab id/class + Animation atts), if the helper exists.
 $attr_html = '';
-$classes   = array( 'upw-cart' );
+$classes   = array( 'upwc-cart' );
 if ( function_exists( 'sc_build_wrapper_attr' ) ) {
-	$atts['base_class']       = 'upw-cart';
-	$atts['unique_id_prefix'] = 'upw-cart-';
+	$atts['base_class']       = 'upwc-cart';
+	$atts['unique_id_prefix'] = 'upwc-cart-';
 	$atts['extra_attrs']      = array();
 	$attr = sc_build_wrapper_attr( $atts );
 	if ( ! empty( $attr['class'] ) ) {
@@ -61,18 +61,18 @@ $aria = __( 'View cart', 'fw' );
 ?>
 <a class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" href="<?php echo esc_url( wc_get_cart_url() ); ?>" aria-label="<?php echo esc_attr( $aria ); ?>" <?php echo $attr_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<?php if ( $label !== '' ) : ?>
-		<span class="upw-cart__label"><?php echo esc_html( $label ); ?></span>
+		<span class="upwc-cart__label"><?php echo esc_html( $label ); ?></span>
 	<?php endif; ?>
 	<?php if ( $icon_svg !== '' ) : ?>
-		<span class="upw-cart__icon"><?php echo $icon_svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<span class="upwc-cart__icon"><?php echo $icon_svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			<?php if ( $show_count ) : ?>
-				<span class="upw-cart__count" aria-hidden="true"><?php echo esc_html( $count ); ?></span>
+				<span class="upwc-cart__count" aria-hidden="true"><?php echo esc_html( $count ); ?></span>
 			<?php endif; ?>
 		</span>
 	<?php elseif ( $show_count ) : ?>
-		<span class="upw-cart__count"><?php echo esc_html( $count ); ?></span>
+		<span class="upwc-cart__count"><?php echo esc_html( $count ); ?></span>
 	<?php endif; ?>
 	<?php if ( $show_total ) : ?>
-		<span class="upw-cart__total"><?php echo wp_kses_post( $total ); ?></span>
+		<span class="upwc-cart__total"><?php echo wp_kses_post( $total ); ?></span>
 	<?php endif; ?>
 </a>

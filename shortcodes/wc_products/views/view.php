@@ -9,12 +9,12 @@
  * all share identical output. Inert when WooCommerce is inactive.
  */
 
-if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'upw_wc_products_resolve' ) ) {
+if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'upwc_wc_products_resolve' ) ) {
 	return;
 }
 
-$r    = upw_wc_products_resolve( $atts );
-$args = upw_wc_products_query_args( $r, 1 );
+$r    = upwc_wc_products_resolve( $atts );
+$args = upwc_wc_products_query_args( $r, 1 );
 if ( $args === false ) {
 	return;
 }
@@ -27,13 +27,13 @@ if ( ! $query->have_posts() ) {
 
 /* ---- Wrapper classes ----------------------------------------------------- */
 $wrap_classes = array(
-	'upw-products',
-	'upw-products--gap-' . ( $r['gap'] !== '' ? $r['gap'] : 'md' ),
-	'upw-products--ratio-' . ( $r['image_ratio'] !== '' ? $r['image_ratio'] : 'auto' ),
-	'upw-products--' . $r['layout'],
+	'upwc-products',
+	'upwc-products--gap-' . ( $r['gap'] !== '' ? $r['gap'] : 'md' ),
+	'upwc-products--ratio-' . ( $r['image_ratio'] !== '' ? $r['image_ratio'] : 'auto' ),
+	'upwc-products--' . $r['layout'],
 );
 if ( $r['alignment'] !== '' && $r['alignment'] !== 'inherit' ) {
-	$wrap_classes[] = 'upw-products--align-' . $r['alignment'];
+	$wrap_classes[] = 'upwc-products--align-' . $r['alignment'];
 }
 
 $is_carousel = ( $r['layout'] === 'carousel' );
@@ -42,18 +42,18 @@ $load_more   = ( ! $is_carousel && $r['pagination'] === 'load_more' && $query->m
 echo '<div class="' . esc_attr( implode( ' ', $wrap_classes ) ) . '">';
 
 if ( $is_carousel && $r['show_arrows'] ) {
-	echo '<button type="button" class="upw-products__nav upw-products__nav--prev" aria-label="' . esc_attr__( 'Previous', 'fw' ) . '">&#8249;</button>';
+	echo '<button type="button" class="upwc-products__nav upwc-products__nav--prev" aria-label="' . esc_attr__( 'Previous', 'fw' ) . '">&#8249;</button>';
 }
 
-echo '<ul class="products upw-products__grid upw-products--cols-' . (int) $r['columns'] . '">';
+echo '<ul class="products upwc-products__grid upwc-products--cols-' . (int) $r['columns'] . '">';
 while ( $query->have_posts() ) {
 	$query->the_post();
-	echo upw_wc_products_card( wc_get_product( get_the_ID() ), $r ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	echo upwc_wc_products_card( wc_get_product( get_the_ID() ), $r ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 }
 echo '</ul>';
 
 if ( $is_carousel && $r['show_arrows'] ) {
-	echo '<button type="button" class="upw-products__nav upw-products__nav--next" aria-label="' . esc_attr__( 'Next', 'fw' ) . '">&#8250;</button>';
+	echo '<button type="button" class="upwc-products__nav upwc-products__nav--next" aria-label="' . esc_attr__( 'Next', 'fw' ) . '">&#8250;</button>';
 }
 
 if ( $load_more ) {
@@ -86,8 +86,8 @@ if ( $load_more ) {
 			'show_quick_view'    => $r['quick_view'] ? 'yes' : 'no',
 		)
 	);
-	echo '<div class="upw-products__more">';
-	echo '<button type="button" class="upw-products__more-btn button" data-page="1" data-max="' . (int) $query->max_num_pages . '" data-atts="' . esc_attr( $payload ) . '">' . esc_html__( 'Load More', 'fw' ) . '</button>';
+	echo '<div class="upwc-products__more">';
+	echo '<button type="button" class="upwc-products__more-btn button" data-page="1" data-max="' . (int) $query->max_num_pages . '" data-atts="' . esc_attr( $payload ) . '">' . esc_html__( 'Load More', 'fw' ) . '</button>';
 	echo '</div>';
 }
 

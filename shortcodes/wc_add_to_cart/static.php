@@ -2,8 +2,8 @@
 	die( 'Forbidden' );
 }
 
-if ( function_exists( 'upw_wc_enqueue_core_styles' ) ) {
-	upw_wc_enqueue_core_styles();
+if ( function_exists( 'upwc_wc_enqueue_core_styles' ) ) {
+	upwc_wc_enqueue_core_styles();
 }
 
 // The button is AJAX-capable; ensure WooCommerce's add-to-cart + cart-fragments

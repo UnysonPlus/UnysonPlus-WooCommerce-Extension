@@ -9,14 +9,14 @@
  * AJAX handlers, so the markup and query stay identical everywhere.
  */
 
-if ( ! function_exists( 'upw_wc_products_resolve' ) ) {
+if ( ! function_exists( 'upwc_wc_products_resolve' ) ) {
 	/**
 	 * Normalize raw element atts into a resolved options array.
 	 *
 	 * @param array $atts
 	 * @return array
 	 */
-	function upw_wc_products_resolve( $atts ) {
+	function upwc_wc_products_resolve( $atts ) {
 		$atts   = is_array( $atts ) ? $atts : array();
 		$truthy = static function ( $v ) {
 			return $v === true || $v === 'yes' || $v === '1' || $v === 1 || $v === 'true';
@@ -59,15 +59,15 @@ if ( ! function_exists( 'upw_wc_products_resolve' ) ) {
 	}
 }
 
-if ( ! function_exists( 'upw_wc_products_query_args' ) ) {
+if ( ! function_exists( 'upwc_wc_products_query_args' ) ) {
 	/**
 	 * Build WP_Query args from resolved options.
 	 *
-	 * @param array $r     Resolved options (from upw_wc_products_resolve()).
+	 * @param array $r     Resolved options (from upwc_wc_products_resolve()).
 	 * @param int   $paged Page number (Load More).
 	 * @return array|false WP_Query args, or false when the source yields nothing.
 	 */
-	function upw_wc_products_query_args( $r, $paged = 1 ) {
+	function upwc_wc_products_query_args( $r, $paged = 1 ) {
 		$args = array(
 			'post_type'           => 'product',
 			'post_status'         => 'publish',
@@ -213,7 +213,7 @@ if ( ! function_exists( 'upw_wc_products_query_args' ) ) {
 	}
 }
 
-if ( ! function_exists( 'upw_wc_products_card' ) ) {
+if ( ! function_exists( 'upwc_wc_products_card' ) ) {
 	/**
 	 * Render one product card. Call inside the loop (sets the global product).
 	 *
@@ -221,14 +221,14 @@ if ( ! function_exists( 'upw_wc_products_card' ) ) {
 	 * @param array      $r Resolved options.
 	 * @return string
 	 */
-	function upw_wc_products_card( $product, $r ) {
+	function upwc_wc_products_card( $product, $r ) {
 		if ( ! $product instanceof WC_Product ) {
 			return '';
 		}
 		$GLOBALS['product'] = $product;
 
-		$out  = '<li class="product upw-product">';
-		$out .= '<a class="upw-product__link" href="' . esc_url( $product->get_permalink() ) . '">';
+		$out  = '<li class="product upwc-product">';
+		$out .= '<a class="upwc-product__link" href="' . esc_url( $product->get_permalink() ) . '">';
 
 		$badges = array();
 		if ( $r['show_badge'] && $product->is_on_sale() ) {
@@ -240,43 +240,43 @@ if ( ! function_exists( 'upw_wc_products_card' ) ) {
 					$label = '-' . (int) round( ( $regular - $sale ) / $regular * 100 ) . '%';
 				}
 			}
-			$badges[] = '<span class="upw-product__badge onsale">' . $label . '</span>';
+			$badges[] = '<span class="upwc-product__badge onsale">' . $label . '</span>';
 		}
 		if ( $r['show_featured'] && $product->is_featured() ) {
-			$badges[] = '<span class="upw-product__badge featured">' . esc_html__( 'Featured', 'fw' ) . '</span>';
+			$badges[] = '<span class="upwc-product__badge featured">' . esc_html__( 'Featured', 'fw' ) . '</span>';
 		}
 		if ( $r['show_new'] && $r['new_days'] > 0 ) {
 			$created = $product->get_date_created();
 			if ( $created && $created->getTimestamp() > ( time() - $r['new_days'] * DAY_IN_SECONDS ) ) {
-				$badges[] = '<span class="upw-product__badge is-new">' . esc_html__( 'New', 'fw' ) . '</span>';
+				$badges[] = '<span class="upwc-product__badge is-new">' . esc_html__( 'New', 'fw' ) . '</span>';
 			}
 		}
 		if ( $r['show_stock'] && ! $product->is_in_stock() ) {
-			$badges[] = '<span class="upw-product__badge out-of-stock">' . esc_html__( 'Out of stock', 'fw' ) . '</span>';
+			$badges[] = '<span class="upwc-product__badge out-of-stock">' . esc_html__( 'Out of stock', 'fw' ) . '</span>';
 		}
 		if ( ! empty( $badges ) ) {
-			$out .= '<span class="upw-product__badges">' . implode( '', $badges ) . '</span>';
+			$out .= '<span class="upwc-product__badges">' . implode( '', $badges ) . '</span>';
 		}
 
-		$out .= '<span class="upw-product__media">' . $product->get_image( 'woocommerce_thumbnail' ) . '</span>';
-		$out .= '<span class="upw-product__title">' . esc_html( $product->get_name() ) . '</span>';
+		$out .= '<span class="upwc-product__media">' . $product->get_image( 'woocommerce_thumbnail' ) . '</span>';
+		$out .= '<span class="upwc-product__title">' . esc_html( $product->get_name() ) . '</span>';
 		$out .= '</a>';
 
 		if ( $r['quick_view'] ) {
-			$out .= '<button type="button" class="upw-product__quickview" data-product="' . (int) $product->get_id() . '">' . esc_html__( 'Quick View', 'fw' ) . '</button>';
+			$out .= '<button type="button" class="upwc-product__quickview" data-product="' . (int) $product->get_id() . '">' . esc_html__( 'Quick View', 'fw' ) . '</button>';
 		}
 
 		if ( $r['show_rating'] ) {
 			$avg = (float) $product->get_average_rating();
 			if ( $avg > 0 ) {
-				$out .= '<div class="upw-product__rating">' . wc_get_rating_html( $avg ) . '</div>';
+				$out .= '<div class="upwc-product__rating">' . wc_get_rating_html( $avg ) . '</div>';
 			}
 		}
 
 		if ( $r['show_price'] ) {
 			$price_html = $product->get_price_html();
 			if ( $price_html ) {
-				$out .= '<div class="upw-product__price">' . $price_html . '</div>';
+				$out .= '<div class="upwc-product__price">' . $price_html . '</div>';
 			}
 		}
 
@@ -288,12 +288,12 @@ if ( ! function_exists( 'upw_wc_products_card' ) ) {
 			}
 			$low = max( 1, (int) $low );
 			if ( $qty !== null && $qty > 0 && $qty <= $low ) {
-				$out .= '<div class="upw-product__stock low">' . sprintf( esc_html__( 'Only %d left', 'fw' ), (int) $qty ) . '</div>';
+				$out .= '<div class="upwc-product__stock low">' . sprintf( esc_html__( 'Only %d left', 'fw' ), (int) $qty ) . '</div>';
 			}
 		}
 
 		if ( $r['show_atc'] && function_exists( 'woocommerce_template_loop_add_to_cart' ) ) {
-			$out .= '<div class="upw-product__cart">';
+			$out .= '<div class="upwc-product__cart">';
 			ob_start();
 			woocommerce_template_loop_add_to_cart();
 			$out .= ob_get_clean();

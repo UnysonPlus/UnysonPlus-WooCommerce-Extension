@@ -24,10 +24,10 @@ wp_enqueue_script(
 );
 wp_localize_script(
 	'fw-shortcode-wc-products',
-	'upwWcProducts',
+	'upwcWcProducts',
 	array(
 		'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-		'nonce'   => wp_create_nonce( 'upw_wc_products' ),
+		'nonce'   => wp_create_nonce( 'upwc_wc_products' ),
 		'i18n'    => array(
 			'loading' => __( 'Loading…', 'fw' ),
 			'close'   => __( 'Close', 'fw' ),

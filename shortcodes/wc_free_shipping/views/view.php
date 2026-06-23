@@ -6,13 +6,13 @@
  * configured for the cart's shipping zone. In scope: $atts.
  */
 
-if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'upw_wc_free_shipping_bar_html' ) ) {
+if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'upwc_wc_free_shipping_bar_html' ) ) {
 	return;
 }
 
-$inner = upw_wc_free_shipping_bar_html();
+$inner = upwc_wc_free_shipping_bar_html();
 if ( $inner === '' ) {
 	return;
 }
 
-echo '<div class="upw-freeship">' . $inner . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+echo '<div class="upwc-freeship">' . $inner . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

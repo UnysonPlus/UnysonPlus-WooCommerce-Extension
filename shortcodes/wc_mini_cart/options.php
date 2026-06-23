@@ -30,8 +30,8 @@ $options = array(
 						),
 						'value'   => 'click',
 					),
-					'show_count' => function_exists( 'upw_wc_switch' )
-						? upw_wc_switch( __( 'Item Count', 'fw' ), __( 'Show the item-count badge on the icon.', 'fw' ), 'yes' )
+					'show_count' => function_exists( 'upwc_wc_switch' )
+						? upwc_wc_switch( __( 'Item Count', 'fw' ), __( 'Show the item-count badge on the icon.', 'fw' ), 'yes' )
 						: array( 'type' => 'switch', 'label' => __( 'Item Count', 'fw' ), 'value' => 'yes' ),
 				),
 			),

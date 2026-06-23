@@ -25,8 +25,8 @@ if ( function_exists( 'taxonomy_exists' ) && taxonomy_exists( 'product_cat' ) ) 
 }
 
 // Explicit yes/no switch so the stored att value is always predictable in view.php.
-if ( ! function_exists( 'upw_products_switch' ) ) {
-	function upw_products_switch( $label, $desc = '', $value = 'yes' ) {
+if ( ! function_exists( 'upwc_products_switch' ) ) {
+	function upwc_products_switch( $label, $desc = '', $value = 'yes' ) {
 		return array(
 			'type'         => 'switch',
 			'label'        => $label,
@@ -142,7 +142,7 @@ $options = array(
 			'group_display' => array(
 				'type'    => 'group',
 				'options' => array(
-					'show_sale_badge'    => upw_products_switch( __( 'Sale Badge', 'fw' ), __( 'Show a "Sale" badge on discounted products.', 'fw' ) ),
+					'show_sale_badge'    => upwc_products_switch( __( 'Sale Badge', 'fw' ), __( 'Show a "Sale" badge on discounted products.', 'fw' ) ),
 					'badge_style'        => array(
 						'type'    => 'select',
 						'label'   => __( 'Sale Badge Style', 'fw' ),
@@ -153,8 +153,8 @@ $options = array(
 						),
 						'value'   => 'text',
 					),
-					'show_featured_badge' => upw_products_switch( __( 'Featured Badge', 'fw' ), __( 'Show a "Featured" badge on featured products.', 'fw' ), 'no' ),
-					'show_new_badge'     => upw_products_switch( __( 'New Badge', 'fw' ), __( 'Show a "New" badge on recently published products.', 'fw' ), 'no' ),
+					'show_featured_badge' => upwc_products_switch( __( 'Featured Badge', 'fw' ), __( 'Show a "Featured" badge on featured products.', 'fw' ), 'no' ),
+					'show_new_badge'     => upwc_products_switch( __( 'New Badge', 'fw' ), __( 'Show a "New" badge on recently published products.', 'fw' ), 'no' ),
 					'new_days'           => array(
 						'type'            => 'text',
 						'label'           => __( 'New For (days)', 'fw' ),
@@ -162,11 +162,11 @@ $options = array(
 						'value'           => '14',
 						'dynamic_content' => false,
 					),
-					'show_stock'         => upw_products_switch( __( 'Stock Status', 'fw' ), __( 'Show "Out of stock" and low-stock ("Only N left") notices on cards.', 'fw' ), 'no' ),
-					'show_quick_view'    => upw_products_switch( __( 'Quick View', 'fw' ), __( 'Add a "Quick View" button that opens the product in a modal.', 'fw' ), 'no' ),
-					'show_rating'        => upw_products_switch( __( 'Star Rating', 'fw' ), __( 'Show the average star rating (when a product has reviews).', 'fw' ) ),
-					'show_price'         => upw_products_switch( __( 'Price', 'fw' ) ),
-					'show_add_to_cart'   => upw_products_switch( __( 'Add to Cart Button', 'fw' ) ),
+					'show_stock'         => upwc_products_switch( __( 'Stock Status', 'fw' ), __( 'Show "Out of stock" and low-stock ("Only N left") notices on cards.', 'fw' ), 'no' ),
+					'show_quick_view'    => upwc_products_switch( __( 'Quick View', 'fw' ), __( 'Add a "Quick View" button that opens the product in a modal.', 'fw' ), 'no' ),
+					'show_rating'        => upwc_products_switch( __( 'Star Rating', 'fw' ), __( 'Show the average star rating (when a product has reviews).', 'fw' ) ),
+					'show_price'         => upwc_products_switch( __( 'Price', 'fw' ) ),
+					'show_add_to_cart'   => upwc_products_switch( __( 'Add to Cart Button', 'fw' ) ),
 				),
 			),
 		),
@@ -193,7 +193,7 @@ $options = array(
 						'choices' => array( '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6' ),
 						'value'   => '4',
 					),
-					'carousel_arrows' => upw_products_switch( __( 'Carousel Arrows', 'fw' ), __( 'Show prev / next arrows on the Carousel layout.', 'fw' ), 'yes' ),
+					'carousel_arrows' => upwc_products_switch( __( 'Carousel Arrows', 'fw' ), __( 'Show prev / next arrows on the Carousel layout.', 'fw' ), 'yes' ),
 					'pagination'  => array(
 						'type'    => 'select',
 						'label'   => __( 'Pagination', 'fw' ),

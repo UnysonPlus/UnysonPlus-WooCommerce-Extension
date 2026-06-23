@@ -3,10 +3,10 @@
  */
 ( function () {
 	function init() {
-		var carts = document.querySelectorAll( '.upw-minicart[data-trigger="click"]' );
+		var carts = document.querySelectorAll( '.upwc-minicart[data-trigger="click"]' );
 		for ( var i = 0; i < carts.length; i++ ) {
 			( function ( cart ) {
-				var toggle = cart.querySelector( '.upw-minicart__toggle' );
+				var toggle = cart.querySelector( '.upwc-minicart__toggle' );
 				if ( ! toggle ) {
 					return;
 				}
@@ -19,11 +19,11 @@
 		}
 		// Close any open click-cart when clicking outside.
 		document.addEventListener( 'click', function ( e ) {
-			var open = document.querySelectorAll( '.upw-minicart.is-open' );
+			var open = document.querySelectorAll( '.upwc-minicart.is-open' );
 			for ( var j = 0; j < open.length; j++ ) {
 				if ( ! open[ j ].contains( e.target ) ) {
 					open[ j ].classList.remove( 'is-open' );
-					var t = open[ j ].querySelector( '.upw-minicart__toggle' );
+					var t = open[ j ].querySelector( '.upwc-minicart__toggle' );
 					if ( t ) {
 						t.setAttribute( 'aria-expanded', 'false' );
 					}

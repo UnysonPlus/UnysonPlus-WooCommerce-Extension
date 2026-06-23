@@ -11,8 +11,8 @@ $options = array(
 			'group_account' => array(
 				'type'    => 'group',
 				'options' => array(
-					'show_label' => function_exists( 'upw_wc_switch' )
-						? upw_wc_switch( __( 'Show Label', 'fw' ), __( 'Show "Login" / "Hi, name" text beside the icon.', 'fw' ), 'yes' )
+					'show_label' => function_exists( 'upwc_wc_switch' )
+						? upwc_wc_switch( __( 'Show Label', 'fw' ), __( 'Show "Login" / "Hi, name" text beside the icon.', 'fw' ), 'yes' )
 						: array( 'type' => 'switch', 'label' => __( 'Show Label', 'fw' ), 'value' => 'yes' ),
 					'trigger'    => array(
 						'type'    => 'select',

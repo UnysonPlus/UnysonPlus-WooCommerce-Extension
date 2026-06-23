@@ -55,8 +55,8 @@ $options = array(
 						'value'           => '',
 						'dynamic_content' => false,
 					),
-					'hide_empty' => function_exists( 'upw_wc_switch' )
-						? upw_wc_switch( __( 'Hide Empty', 'fw' ), __( 'Hide categories that have no products.', 'fw' ), 'yes' )
+					'hide_empty' => function_exists( 'upwc_wc_switch' )
+						? upwc_wc_switch( __( 'Hide Empty', 'fw' ), __( 'Hide categories that have no products.', 'fw' ), 'yes' )
 						: array( 'type' => 'switch', 'label' => __( 'Hide Empty', 'fw' ), 'value' => 'yes' ),
 				),
 			),

@@ -7,8 +7,8 @@ if ( ! $wc_ext ) {
 	return;
 }
 
-if ( function_exists( 'upw_wc_enqueue_core_styles' ) ) {
-	upw_wc_enqueue_core_styles();
+if ( function_exists( 'upwc_wc_enqueue_core_styles' ) ) {
+	upwc_wc_enqueue_core_styles();
 }
 
 wp_enqueue_style(

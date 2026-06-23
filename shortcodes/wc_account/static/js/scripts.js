@@ -3,10 +3,10 @@
  */
 ( function () {
 	function init() {
-		var nodes = document.querySelectorAll( '.upw-account[data-trigger="click"]' );
+		var nodes = document.querySelectorAll( '.upwc-account[data-trigger="click"]' );
 		for ( var i = 0; i < nodes.length; i++ ) {
 			( function ( el ) {
-				var toggle = el.querySelector( '.upw-account__toggle' );
+				var toggle = el.querySelector( '.upwc-account__toggle' );
 				if ( ! toggle ) { return; }
 				toggle.addEventListener( 'click', function ( e ) {
 					e.preventDefault();
@@ -16,11 +16,11 @@
 			} )( nodes[ i ] );
 		}
 		document.addEventListener( 'click', function ( e ) {
-			var open = document.querySelectorAll( '.upw-account.is-open' );
+			var open = document.querySelectorAll( '.upwc-account.is-open' );
 			for ( var j = 0; j < open.length; j++ ) {
 				if ( ! open[ j ].contains( e.target ) ) {
 					open[ j ].classList.remove( 'is-open' );
-					var t = open[ j ].querySelector( '.upw-account__toggle' );
+					var t = open[ j ].querySelector( '.upwc-account__toggle' );
 					if ( t ) { t.setAttribute( 'aria-expanded', 'false' ); }
 				}
 			}

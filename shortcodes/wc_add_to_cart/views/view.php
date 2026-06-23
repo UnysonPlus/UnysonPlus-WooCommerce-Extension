@@ -16,8 +16,8 @@ if ( $product_id < 1 ) {
 }
 
 $quantity = isset( $atts['quantity'] ) ? max( 1, (int) $atts['quantity'] ) : 1;
-$truthy   = function_exists( 'upw_wc_truthy' )
-	? 'upw_wc_truthy'
+$truthy   = function_exists( 'upwc_wc_truthy' )
+	? 'upwc_wc_truthy'
 	: static function ( $v ) { return $v === 'yes' || $v === true; };
 $show_price = ! isset( $atts['show_price'] ) || call_user_func( $truthy, $atts['show_price'] );
 $wc_style   = isset( $atts['wc_style'] ) && call_user_func( $truthy, $atts['wc_style'] );

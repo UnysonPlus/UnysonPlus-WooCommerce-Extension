@@ -3,8 +3,8 @@
 }
 
 // Predictable yes/no switch (stored value is always 'yes' or 'no').
-if ( ! function_exists( 'upw_cart_switch' ) ) {
-	function upw_cart_switch( $label, $desc = '', $value = 'no' ) {
+if ( ! function_exists( 'upwc_cart_switch' ) ) {
+	function upwc_cart_switch( $label, $desc = '', $value = 'no' ) {
 		return array(
 			'type'         => 'switch',
 			'label'        => $label,
@@ -43,9 +43,9 @@ $options = array(
 						'value'           => '',
 						'dynamic_content' => false,
 					),
-					'show_count'      => upw_cart_switch( __( 'Item Count', 'fw' ), __( 'Show the number of items as a badge. Updates live when items are added.', 'fw' ), 'yes' ),
-					'show_total'      => upw_cart_switch( __( 'Cart Total', 'fw' ), __( 'Show the cart total amount beside the icon.', 'fw' ), 'no' ),
-					'hide_when_empty' => upw_cart_switch( __( 'Hide When Empty', 'fw' ), __( 'Hide the element entirely while the cart is empty. (Note: with live updates off-screen, keep this OFF so the count can appear when the first item is added.)', 'fw' ), 'no' ),
+					'show_count'      => upwc_cart_switch( __( 'Item Count', 'fw' ), __( 'Show the number of items as a badge. Updates live when items are added.', 'fw' ), 'yes' ),
+					'show_total'      => upwc_cart_switch( __( 'Cart Total', 'fw' ), __( 'Show the cart total amount beside the icon.', 'fw' ), 'no' ),
+					'hide_when_empty' => upwc_cart_switch( __( 'Hide When Empty', 'fw' ), __( 'Hide the element entirely while the cart is empty. (Note: with live updates off-screen, keep this OFF so the count can appear when the first item is added.)', 'fw' ), 'no' ),
 				),
 			),
 		),

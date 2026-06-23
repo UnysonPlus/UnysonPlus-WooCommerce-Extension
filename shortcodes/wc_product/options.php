@@ -2,8 +2,8 @@
 	die( 'Forbidden' );
 }
 
-$upw_product_choices = function_exists( 'upw_wc_product_choices' )
-	? upw_wc_product_choices()
+$upwc_product_choices = function_exists( 'upwc_wc_product_choices' )
+	? upwc_wc_product_choices()
 	: array( '' => __( '— Select a product —', 'fw' ) );
 
 $options = array(
@@ -19,7 +19,7 @@ $options = array(
 						'type'    => 'select',
 						'label'   => __( 'Product', 'fw' ),
 						'desc'    => __( 'The product to display.', 'fw' ),
-						'choices' => $upw_product_choices,
+						'choices' => $upwc_product_choices,
 						'value'   => '',
 					),
 				),
