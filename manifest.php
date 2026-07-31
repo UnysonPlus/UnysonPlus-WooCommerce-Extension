@@ -11,7 +11,7 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.16';
+$manifest['version']     = '1.0.23';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';
@@ -39,6 +39,49 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.0.22 - Mini Cart custom empty state. WooCommerce's mini-cart template has no
+ *          hook for its empty branch (just a hardcoded "No products in the cart."),
+ *          so the mini-cart (shortcode + element) now renders its own empty block
+ *          from options: Empty Icon (icon-picker, incl. emoji), Empty Heading,
+ *          Empty Text, Empty Button Label + URL. Power users can instead hook it in
+ *          PHP: the upwc_mini_cart_empty action (prepend) or the upwc_mini_cart_empty_html
+ *          filter (replace). The block is re-applied to the AJAX cart fragment so it
+ *          survives add/remove-to-cart (persisted like the branding labels). All
+ *          pieces empty + no hook = the WooCommerce default is kept.
+ *
+ * 1.0.21 - Mini Cart "Open As" — Dropdown or Drawer. The mini-cart (shortcode
+ *          and header/footer element) gains an Open-As choice: the contained
+ *          Dropdown flyout, or a right slide-out Drawer side-cart. The drawer is
+ *          portaled to <body> (so it escapes any transformed/backdrop-filtered
+ *          header ancestor) inside a fixed, viewport-sized clipper whose
+ *          overflow:hidden contains the off-screen slide — so a hidden drawer
+ *          never adds a horizontal scrollbar. A Backdrop toggle dims the page +
+ *          locks body scroll (close via backdrop / X / Esc), a Backdrop Blur
+ *          option frosts the page behind it, and the panel offsets below the WP
+ *          admin bar when logged in. One shared renderer drives both modes.
+ *
+ * 1.0.20 - Mini Cart as a native Header/Footer element. The cart is now a
+ *          first-class draggable element in the theme's header/footer Add-element
+ *          popup (registered via the theme's unysonplus_hf_elements API), not a
+ *          custom_html wrapper around the shortcode. Its icon is an icon-picker
+ *          (any library glyph, default a shopping bag) so it matches a source
+ *          site's cart icon, plus the same Panel Title / Subtotal Label / Checkout
+ *          Text / Footnote branding and Open-On / Item-Count controls. Both the
+ *          shortcode and the element now render through one shared function,
+ *          upwc_render_mini_cart() (includes/mini-cart-render.php), and the
+ *          element's CSS/JS are enqueued when a header/footer section uses it.
+ *          Registered only when WooCommerce is active, so it's absent otherwise.
+ *
+ * 1.0.19 - Products element: richer cards. New Content options — Short
+ *          Description (shows each product's excerpt), Ribbon Badge (a
+ *          per-product corner ribbon read from the "_upwc_ribbon" post meta,
+ *          e.g. "Best Seller"), Wishlist Heart (a decorative corner heart), and
+ *          a custom Add to Cart Label (e.g. "Add to Basket") applied via a
+ *          scoped woocommerce_product_add_to_cart_text filter. The Mini Cart
+ *          element also gained Panel Title / Subtotal Label / Checkout Text /
+ *          Footnote branding options (relabelled through a scoped gettext filter
+ *          that also reapplies on the AJAX fragment refresh).
+ *
  * 1.0.14 - Added two elements: Account (a header account link with a dropdown —
  *          login form for guests, account menu + logout for logged-in users)
  *          and Free Shipping Bar (a progress bar toward the free-shipping spend

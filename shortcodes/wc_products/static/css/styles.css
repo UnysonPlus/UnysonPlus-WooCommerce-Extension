@@ -18,8 +18,8 @@
 /* Neutralize WooCommerce's float/clearfix on the shared ul.products element. */
 .upwc-products__grid::before,
 .upwc-products__grid::after {
-	display: none;
-	content: none;
+	display: none !important;
+	content: none !important;
 }
 .upwc-products__grid li.product {
 	width: auto !important;
