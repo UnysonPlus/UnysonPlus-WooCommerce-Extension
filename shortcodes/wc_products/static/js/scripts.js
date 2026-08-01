@@ -4,7 +4,6 @@
  */
 ( function () {
 	var P = window.upwcWcProducts || {};
-	var $ = window.jQuery;
 
 	/* ---- Carousel ---- */
 	function carouselStep( track ) {
@@ -71,6 +70,9 @@
 			if ( res && res.success ) {
 				body.innerHTML = res.data.html;
 				// Re-init WooCommerce's variation form for variable products.
+				// (jQuery is looked up lazily: it's only present when WooCommerce's
+				// own scripts — which depend on it — are on the page.)
+				var $ = window.jQuery;
 				if ( $ && $.fn.wc_variation_form ) { $( body ).find( '.variations_form' ).each( function () { $( this ).wc_variation_form(); } ); }
 			} else {
 				modal.classList.remove( 'is-open' );

@@ -66,11 +66,11 @@ $aria = __( 'View cart', 'fw' );
 	<?php if ( $icon_svg !== '' ) : ?>
 		<span class="upwc-cart__icon"><?php echo $icon_svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			<?php if ( $show_count ) : ?>
-				<span class="upwc-cart__count" aria-hidden="true"><?php echo esc_html( $count ); ?></span>
+				<span class="upwc-cart__count<?php echo $count < 1 ? ' upwc-cart__count--empty' : ''; ?>" aria-hidden="true"><?php echo esc_html( $count ); ?></span>
 			<?php endif; ?>
 		</span>
 	<?php elseif ( $show_count ) : ?>
-		<span class="upwc-cart__count"><?php echo esc_html( $count ); ?></span>
+		<span class="upwc-cart__count<?php echo $count < 1 ? ' upwc-cart__count--empty' : ''; ?>"><?php echo esc_html( $count ); ?></span>
 	<?php endif; ?>
 	<?php if ( $show_total ) : ?>
 		<span class="upwc-cart__total"><?php echo wp_kses_post( $total ); ?></span>

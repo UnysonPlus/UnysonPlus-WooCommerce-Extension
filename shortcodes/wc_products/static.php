@@ -18,7 +18,7 @@ wp_enqueue_style(
 wp_enqueue_script(
 	'fw-shortcode-wc-products',
 	$wc_ext->get_declared_URI( '/shortcodes/wc_products/static/js/scripts.js' ),
-	array( 'jquery' ),
+	array(),
 	$wc_ext->manifest->get_version(),
 	true
 );

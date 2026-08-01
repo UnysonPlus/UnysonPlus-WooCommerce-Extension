@@ -53,6 +53,12 @@ class FW_Extension_Woocommerce extends FW_Extension {
 			return;
 		}
 
+		// Shared mini-cart renderer + the "Mini Cart" header/footer element (registered
+		// via the theme's unysonplus_hf_elements API). Loaded only when WooCommerce is
+		// active, so the element simply doesn't exist otherwise.
+		require_once dirname( __FILE__ ) . '/includes/mini-cart-render.php';
+		require_once dirname( __FILE__ ) . '/includes/mini-cart-hf-element.php';
+
 		// The framework boots inside after_setup_theme (priority 10) and the
 		// plugin loads before the theme, so this _init() runs BEFORE the theme's
 		// own add_theme_support(). Defer the "did the theme declare support?"
@@ -62,10 +68,20 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		if ( ! is_admin() ) {
 			add_action( 'wp_enqueue_scripts', array( $this, '_action_enqueue_generic_styles' ), 20 );
 		}
+		// The [wc_products] Card Rows live preview is now provided by the SHARED
+		// card-preview engine in the shortcodes extension (enqueued there on the
+		// post-edit screens); no per-extension enqueue is needed here.
 
 		// Live-refresh the Cart element's count / total via WooCommerce AJAX
 		// fragments (works for any [wc_cart_link] currently in the DOM).
 		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, '_filter_cart_fragments' ) );
+
+		// Mini-cart branding across the AJAX fragment refresh: the panel content is
+		// re-rendered in a separate wc-ajax request where the shortcode's own scoped
+		// relabel isn't present, so reapply the stored Subtotal/Checkout overrides
+		// there (gated to those AJAX endpoints so it never leaks to cart/checkout).
+		add_action( 'wc_ajax_add_to_cart', array( $this, '_action_minicart_ajax_relabel' ), 0 );
+		add_action( 'wc_ajax_get_refreshed_fragments', array( $this, '_action_minicart_ajax_relabel' ), 0 );
 
 		// Shop behavior settings (catalog mode, breadcrumb, badge style, AJAX cart,
 		// product-gallery features).
@@ -271,6 +287,30 @@ class FW_Extension_Woocommerce extends FW_Extension {
 	 * @return array
 	 * @internal
 	 */
+	/**
+	 * During the add-to-cart / refresh-fragments AJAX requests, reapply the mini-cart's
+	 * stored Subtotal / Checkout label overrides (saved by the wc_mini_cart view) so the
+	 * refreshed panel keeps its branding. Gated to these AJAX endpoints so the overrides
+	 * never leak onto the Cart / Checkout pages.
+	 *
+	 * @return void
+	 * @internal
+	 */
+	public function _action_minicart_ajax_relabel() {
+		$labels = get_option( 'upwc_minicart_labels' );
+		if ( ! is_array( $labels ) || ! $labels ) {
+			return;
+		}
+		add_filter(
+			'gettext',
+			static function ( $translated, $text, $domain ) use ( $labels ) {
+				return ( 'woocommerce' === $domain && isset( $labels[ $text ] ) ) ? $labels[ $text ] : $translated;
+			},
+			20,
+			3
+		);
+	}
+
 	public function _filter_cart_fragments( $fragments ) {
 		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
 			return $fragments;
@@ -278,9 +318,13 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		$count = (int) WC()->cart->get_cart_contents_count();
 		$total = WC()->cart->get_cart_total();
 
-		$fragments['.upwc-cart .upwc-cart__count']         = '<span class="upwc-cart__count" aria-hidden="true">' . esc_html( $count ) . '</span>';
+		// Empty-cart badges carry the --empty modifier (hidden via CSS) — must match the
+		// server-side render, or WC's on-load fragment refresh would re-show a "0" bubble.
+		$empty = $count < 1 ? ' upwc-cart__count--empty' : '';
+		$mc_empty = $count < 1 ? ' upwc-minicart__count--empty' : '';
+		$fragments['.upwc-cart .upwc-cart__count']         = '<span class="upwc-cart__count' . $empty . '" aria-hidden="true">' . esc_html( $count ) . '</span>';
 		$fragments['.upwc-cart .upwc-cart__total']         = '<span class="upwc-cart__total">' . wp_kses_post( $total ) . '</span>';
-		$fragments['.upwc-minicart .upwc-minicart__count'] = '<span class="upwc-minicart__count" aria-hidden="true">' . esc_html( $count ) . '</span>';
+		$fragments['.upwc-minicart .upwc-minicart__count'] = '<span class="upwc-minicart__count' . $mc_empty . '" aria-hidden="true">' . esc_html( $count ) . '</span>';
 
 		if ( function_exists( 'upwc_wc_free_shipping_bar_html' ) ) {
 			$bar = upwc_wc_free_shipping_bar_html();
@@ -444,4 +488,5 @@ class FW_Extension_Woocommerce extends FW_Extension {
 			);
 		}
 	}
+
 }

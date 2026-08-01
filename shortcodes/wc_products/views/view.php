@@ -39,7 +39,8 @@ if ( $r['alignment'] !== '' && $r['alignment'] !== 'inherit' ) {
 $is_carousel = ( $r['layout'] === 'carousel' );
 $load_more   = ( ! $is_carousel && $r['pagination'] === 'load_more' && $query->max_num_pages > 1 );
 
-echo '<div class="' . esc_attr( implode( ' ', $wrap_classes ) ) . '">';
+$wrap_style = ( '' !== $r['image_size'] ) ? ' style="--upwc-img-size:' . esc_attr( $r['image_size'] ) . '"' : '';
+echo '<div class="' . esc_attr( implode( ' ', $wrap_classes ) ) . '"' . $wrap_style . '>';
 
 if ( $is_carousel && $r['show_arrows'] ) {
 	echo '<button type="button" class="upwc-products__nav upwc-products__nav--prev" aria-label="' . esc_attr__( 'Previous', 'fw' ) . '">&#8249;</button>';

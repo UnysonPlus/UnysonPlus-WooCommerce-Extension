@@ -38,6 +38,9 @@
 	--upwc-cart-badge-bg: #e2401c;
 	--upwc-cart-badge-fg: #fff;
 }
+.upwc-cart__count--empty {
+	display: none; /* no count bubble when the cart is empty (matches standard cart UX) */
+}
 .upwc-cart__icon .upwc-cart__count {
 	position: absolute;
 	top: -0.55em;

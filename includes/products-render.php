@@ -37,6 +37,15 @@ if ( ! function_exists( 'upwc_wc_products_resolve' ) ) {
 			'columns'         => isset( $atts['columns'] ) ? max( 1, (int) $atts['columns'] ) : 4,
 			'gap'             => isset( $atts['gap'] ) ? preg_replace( '/[^a-z]/', '', (string) $atts['gap'] ) : 'md',
 			'image_ratio'     => isset( $atts['image_ratio'] ) ? preg_replace( '/[^a-z]/', '', (string) $atts['image_ratio'] ) : 'auto',
+			// Image Size (width). Empty = auto. A unit-input { value, unit } → a CSS length string,
+			// emitted as the --upwc-img-size custom property on the grid wrapper (view.php).
+			'image_size'      => ( static function ( $v ) {
+				if ( ! is_array( $v ) || ! isset( $v['value'] ) || '' === (string) $v['value'] || null === $v['value'] ) {
+					return '';
+				}
+				$unit = isset( $v['unit'] ) && preg_match( '/^[a-z%]+$/', $v['unit'] ) ? $v['unit'] : 'px';
+				return (float) $v['value'] . $unit;
+			} )( isset( $atts['image_size'] ) ? $atts['image_size'] : null ),
 			'alignment'       => isset( $atts['alignment'] ) ? preg_replace( '/[^a-z]/', '', (string) $atts['alignment'] ) : '',
 			'layout'          => ( isset( $atts['layout'] ) && $atts['layout'] === 'carousel' ) ? 'carousel' : 'grid',
 			'show_arrows'     => ! array_key_exists( 'carousel_arrows', $atts ) ? true : $truthy( $atts['carousel_arrows'] ),
@@ -46,15 +55,34 @@ if ( ! function_exists( 'upwc_wc_products_resolve' ) ) {
 			'attribute_terms' => isset( $atts['attribute_terms'] ) ? (string) $atts['attribute_terms'] : '',
 			'product_ids'     => isset( $atts['product_ids'] ) ? (string) $atts['product_ids'] : '',
 			'show_badge'      => $on( 'show_sale_badge' ),
-			'show_rating'     => $on( 'show_rating' ),
-			'show_price'      => $on( 'show_price' ),
-			'show_atc'        => $on( 'show_add_to_cart' ),
+			// Per-element PRESENCE toggles removed 2026-08-01: the Card Rows designer is the single
+			// control for what's on the card (a slot renders when it's in a row AND has data — remove
+			// the slot to hide it). These stay TRUE so a slot placed in a row always renders its content.
+			// (show_stock dropped entirely — it only fed the removed Classic markup; there is no stock slot.)
+			'show_rating'       => true,
+			'show_price'        => true,
+			'show_atc'          => true,
+			'quick_view'        => true,
+			'show_excerpt'      => true,
+			'show_wishlist'     => true,
+			'show_rating_count' => true,
 			'badge_style'     => ( isset( $atts['badge_style'] ) && $atts['badge_style'] === 'percent' ) ? 'percent' : 'text',
 			'show_featured'   => $opt( 'show_featured_badge' ),
 			'show_new'        => $opt( 'show_new_badge' ),
 			'new_days'        => isset( $atts['new_days'] ) ? max( 0, (int) $atts['new_days'] ) : 14,
-			'show_stock'      => $opt( 'show_stock' ),
-			'quick_view'      => $opt( 'show_quick_view' ),
+			'show_ribbon'     => $opt( 'show_ribbon' ),
+			// card_rows: the editable row designer (addable-popup) — a list of { slots[], direction,
+			// justify, align }. Empty falls back to a preset in the renderer.
+			'card_rows'       => ( isset( $atts['card_rows'] ) && is_array( $atts['card_rows'] ) ) ? array_values( $atts['card_rows'] ) : array(),
+			// Rating style (shared sc_rating_style_field): symbol + colors + size.
+			'rating_symbol'      => isset( $atts['rating_symbol'] ) ? $atts['rating_symbol'] : 'star',
+			'rating_fill_color'  => isset( $atts['rating_fill_color'] ) ? $atts['rating_fill_color'] : '',
+			'rating_empty_color' => isset( $atts['rating_empty_color'] ) ? $atts['rating_empty_color'] : '',
+			'rating_size'        => isset( $atts['rating_size'] ) ? $atts['rating_size'] : 'md',
+			'add_to_cart_text' => isset( $atts['add_to_cart_text'] ) ? (string) $atts['add_to_cart_text'] : '',
+			// Box Preset class (boxp-{slug}) so each card inherits a reusable Box Preset skin
+			// (border/corners/shadow/fill + hover) — the native alternative to hand-CSS.
+			'box_class'       => function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : '',
 		);
 	}
 }
@@ -227,13 +255,88 @@ if ( ! function_exists( 'upwc_wc_products_card' ) ) {
 		}
 		$GLOBALS['product'] = $product;
 
-		$out  = '<li class="product upwc-product">';
-		$out .= '<a class="upwc-product__link" href="' . esc_url( $product->get_permalink() ) . '">';
+		// The card is ALWAYS assembled from the Card Rows designer — the row system is the single card
+		// model. (The former Classic/Slot "Card Layout" toggle was removed 2026-08-01: it had never been
+		// used, and the rows express the same structure.) An empty designer falls back to a default
+		// preset in the renderer (upwc_wc_products_card_slotted).
+		return upwc_wc_products_card_slotted( $product, $r );
+	}
+}
 
+if ( ! function_exists( 'upwc_wc_products_card_presets' ) ) {
+	/**
+	 * Card-layout presets: an ordered list of ROWS, each row a set of SLOTS with a flex
+	 * direction + main-axis (justify) + cross-axis (align). This is the schema a slot-based
+	 * card is assembled from — and the shape the Site Converter can emit from a captured card
+	 * (structure only; the visual skin stays in CSS/tokens). Known slots: badges, wishlist,
+	 * media, title, excerpt, rating, rating_count, price, cart, quickview.
+	 */
+	function upwc_wc_products_card_presets( $key ) {
+		$p = array(
+			// Classic: header row (badge left / wishlist right), stacked media+title+desc,
+			// left-aligned rating, price split from the cart button.
+			'classic' => array(
+				array( 'slots' => array( 'badges', 'wishlist' ),        'dir' => 'inline', 'justify' => 'between', 'align' => 'center' ),
+				array( 'slots' => array( 'media', 'title', 'excerpt' ), 'dir' => 'stack',  'justify' => 'start',   'align' => 'start' ),
+				array( 'slots' => array( 'rating', 'rating_count' ),    'dir' => 'inline', 'justify' => 'start',   'align' => 'center' ),
+				array( 'slots' => array( 'price', 'cart' ),             'dir' => 'inline', 'justify' => 'between', 'align' => 'center' ),
+			),
+			// Split-header: the pinky-bites pattern — centred content, centred rating.
+			'split-header' => array(
+				array( 'slots' => array( 'badges', 'wishlist' ),        'dir' => 'inline', 'justify' => 'between', 'align' => 'center' ),
+				array( 'slots' => array( 'media', 'title', 'excerpt' ), 'dir' => 'stack',  'justify' => 'start',   'align' => 'center' ),
+				array( 'slots' => array( 'rating', 'rating_count' ),    'dir' => 'inline', 'justify' => 'center',  'align' => 'center' ),
+				array( 'slots' => array( 'price', 'cart' ),             'dir' => 'inline', 'justify' => 'between', 'align' => 'center' ),
+			),
+		);
+		return isset( $p[ $key ] ) ? $p[ $key ] : $p['classic'];
+	}
+}
+
+if ( ! function_exists( 'upwc_wc_products_stars' ) ) {
+	/**
+	 * Clean star rating — our own markup, NOT wc_get_rating_html(), so there is no
+	 * "Rated X out of 5" screen-reader text node leaking into the visible card (a11y is
+	 * preserved via aria-label on the element, which is not a text node). A gold fill span
+	 * is clipped to avg/5 over an empty 5-star track (styled in styles.css).
+	 */
+	function upwc_wc_products_stars( $product, $r = array() ) {
+		$avg = (float) $product->get_average_rating();
+		if ( $avg <= 0 ) {
+			return '';
+		}
+
+		// Render through the shared rating engine (symbol + colors + size come from the
+		// element's Rating options; the two-tone SVG + fractional overlay live there).
+		if ( function_exists( 'sc_rating_stars' ) ) {
+			$args = function_exists( 'sc_rating_style_from_atts' ) ? sc_rating_style_from_atts( $r, 'rating_' ) : array();
+			$args['label'] = sprintf( __( 'Rated %s out of 5', 'fw' ), $avg );
+			return sc_rating_stars( $avg, $args );
+		}
+
+		// Fallback: a plain gold/grey glyph track if the shared engine isn't loaded.
+		$pct = max( 0, min( 100, $avg / 5 * 100 ) );
+		return '<span class="upwc-product__stars" role="img" aria-label="'
+			. esc_attr( sprintf( __( 'Rated %s out of 5', 'fw' ), $avg ) ) . '"><span class="upwc-product__stars-fill" style="width:'
+			. $pct . '%"></span></span>';
+	}
+}
+
+if ( ! function_exists( 'upwc_wc_products_card_slotted' ) ) {
+	/**
+	 * Slot-based card renderer. Builds each slot's HTML, then assembles the rows defined by
+	 * the resolved card_layout preset. Empty slots (and empty rows) are skipped, so a card
+	 * with no rating/excerpt collapses cleanly.
+	 */
+	function upwc_wc_products_card_slotted( $product, $r ) {
+		$id   = $product->get_id();
+		$href = esc_url( $product->get_permalink() );
+
+		// --- badges (sale / featured / new / out-of-stock / ribbon) ---
 		$badges = array();
 		if ( $r['show_badge'] && $product->is_on_sale() ) {
 			$label = esc_html__( 'Sale', 'fw' );
-			if ( $r['badge_style'] === 'percent' ) {
+			if ( 'percent' === $r['badge_style'] ) {
 				$regular = (float) $product->get_regular_price();
 				$sale    = (float) $product->get_sale_price();
 				if ( $regular > 0 && $sale > 0 && $sale < $regular ) {
@@ -251,55 +354,105 @@ if ( ! function_exists( 'upwc_wc_products_card' ) ) {
 				$badges[] = '<span class="upwc-product__badge is-new">' . esc_html__( 'New', 'fw' ) . '</span>';
 			}
 		}
-		if ( $r['show_stock'] && ! $product->is_in_stock() ) {
-			$badges[] = '<span class="upwc-product__badge out-of-stock">' . esc_html__( 'Out of stock', 'fw' ) . '</span>';
-		}
-		if ( ! empty( $badges ) ) {
-			$out .= '<span class="upwc-product__badges">' . implode( '', $badges ) . '</span>';
-		}
-
-		$out .= '<span class="upwc-product__media">' . $product->get_image( 'woocommerce_thumbnail' ) . '</span>';
-		$out .= '<span class="upwc-product__title">' . esc_html( $product->get_name() ) . '</span>';
-		$out .= '</a>';
-
-		if ( $r['quick_view'] ) {
-			$out .= '<button type="button" class="upwc-product__quickview" data-product="' . (int) $product->get_id() . '">' . esc_html__( 'Quick View', 'fw' ) . '</button>';
-		}
-
-		if ( $r['show_rating'] ) {
-			$avg = (float) $product->get_average_rating();
-			if ( $avg > 0 ) {
-				$out .= '<div class="upwc-product__rating">' . wc_get_rating_html( $avg ) . '</div>';
+		if ( $r['show_ribbon'] ) {
+			$ribbon = get_post_meta( $id, '_upwc_ribbon', true );
+			if ( '' !== (string) $ribbon ) {
+				$badges[] = '<span class="upwc-product__badge ribbon">' . esc_html( $ribbon ) . '</span>';
 			}
 		}
 
+		$slots = array();
+		$slots['badges']   = $badges ? '<span class="upwc-product__badges">' . implode( '', $badges ) . '</span>' : '';
+		$slots['wishlist'] = $r['show_wishlist']
+			? '<span class="upwc-product__wishlist" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span>'
+			: '';
+		$slots['media']    = '<a class="upwc-product__link" href="' . $href . '"><span class="upwc-product__media">' . $product->get_image( 'woocommerce_thumbnail' ) . '</span></a>';
+		$slots['title']    = '<a class="upwc-product__titlelink" href="' . $href . '"><span class="upwc-product__title">' . esc_html( $product->get_name() ) . '</span></a>';
+
+		$slots['excerpt'] = '';
+		if ( $r['show_excerpt'] ) {
+			$ex = $product->get_short_description();
+			if ( '' !== (string) $ex ) {
+				$slots['excerpt'] = '<div class="upwc-product__excerpt">' . wp_kses_post( wpautop( $ex ) ) . '</div>';
+			}
+		}
+
+		$slots['rating']       = $r['show_rating'] ? upwc_wc_products_stars( $product, $r ) : '';
+		$slots['rating_count'] = '';
+		if ( $r['show_rating_count'] ) {
+			// The number beside the stars = the average rating (e.g. 4.9, or 5), not the review
+			// count — that's what product cards conventionally show next to the stars.
+			$avg = (float) $product->get_average_rating();
+			if ( $avg > 0 ) {
+				$num = rtrim( rtrim( number_format( $avg, 1 ), '0' ), '.' ); // 4.9 → "4.9", 5.0 → "5"
+				$slots['rating_count'] = '<span class="upwc-product__rating-count">' . esc_html( $num ) . '</span>';
+			}
+		}
+
+		$slots['price'] = '';
 		if ( $r['show_price'] ) {
 			$price_html = $product->get_price_html();
 			if ( $price_html ) {
-				$out .= '<div class="upwc-product__price">' . $price_html . '</div>';
+				$slots['price'] = '<div class="upwc-product__price">' . $price_html . '</div>';
 			}
 		}
 
-		if ( $r['show_stock'] && $product->is_in_stock() && $product->managing_stock() ) {
-			$qty = $product->get_stock_quantity();
-			$low = $product->get_low_stock_amount();
-			if ( $low === '' || $low === null ) {
-				$low = (int) get_option( 'woocommerce_notify_low_stock_amount', 2 );
-			}
-			$low = max( 1, (int) $low );
-			if ( $qty !== null && $qty > 0 && $qty <= $low ) {
-				$out .= '<div class="upwc-product__stock low">' . sprintf( esc_html__( 'Only %d left', 'fw' ), (int) $qty ) . '</div>';
-			}
-		}
+		$slots['quickview'] = $r['quick_view']
+			? '<button type="button" class="upwc-product__quickview" data-product="' . (int) $id . '">' . esc_html__( 'Quick View', 'fw' ) . '</button>'
+			: '';
 
+		$slots['cart'] = '';
 		if ( $r['show_atc'] && function_exists( 'woocommerce_template_loop_add_to_cart' ) ) {
-			$out .= '<div class="upwc-product__cart">';
+			$atc_filter = null;
+			if ( '' !== $r['add_to_cart_text'] ) {
+				$atc_label  = $r['add_to_cart_text'];
+				$atc_filter = static function () use ( $atc_label ) { return $atc_label; };
+				add_filter( 'woocommerce_product_add_to_cart_text', $atc_filter, 20 );
+			}
 			ob_start();
 			woocommerce_template_loop_add_to_cart();
-			$out .= ob_get_clean();
-			$out .= '</div>';
+			$cart_inner = ob_get_clean();
+			if ( $atc_filter ) {
+				remove_filter( 'woocommerce_product_add_to_cart_text', $atc_filter, 20 );
+			}
+			$slots['cart'] = '<div class="upwc-product__cart">' . $cart_inner . '</div>';
 		}
 
+		// --- assemble rows from the editable designer (card_rows), or a preset fallback ---
+		$rows = array();
+		foreach ( (array) $r['card_rows'] as $row ) {
+			$row_slots = isset( $row['slots'] ) ? array_values( (array) $row['slots'] ) : array();
+			if ( empty( $row_slots ) ) {
+				continue;
+			}
+			$rows[] = array(
+				'slots'   => $row_slots,
+				'dir'     => isset( $row['direction'] ) ? $row['direction'] : 'inline',
+				'justify' => isset( $row['justify'] ) ? $row['justify'] : 'start',
+				'align'   => isset( $row['align'] ) ? $row['align'] : 'center',
+			);
+		}
+		if ( empty( $rows ) ) {
+			// No designer rows saved (empty designer) → use the default preset so the card still renders.
+			$rows = upwc_wc_products_card_presets( 'classic' );
+		}
+		$out  = '<li class="product upwc-product upwc-product--slotted' . ( '' !== $r['box_class'] ? ' ' . esc_attr( $r['box_class'] ) : '' ) . '">';
+		foreach ( $rows as $row ) {
+			$cells = '';
+			foreach ( $row['slots'] as $sk ) {
+				if ( ! empty( $slots[ $sk ] ) ) {
+					$cells .= $slots[ $sk ];
+				}
+			}
+			if ( '' === $cells ) {
+				continue; // no populated slot in this row → skip it entirely
+			}
+			$cls = 'upwc-product__row'
+				. ' upwc-row--' . preg_replace( '/[^a-z]/', '', $row['dir'] )
+				. ' upwc-j-' . preg_replace( '/[^a-z]/', '', $row['justify'] )
+				. ' upwc-a-' . preg_replace( '/[^a-z]/', '', $row['align'] );
+			$out .= '<div class="' . $cls . '">' . $cells . '</div>';
+		}
 		$out .= '</li>';
 		return $out;
 	}

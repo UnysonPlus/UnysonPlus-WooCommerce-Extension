@@ -1,14 +1,17 @@
 /**
- * Product Search element styles. Self-contained, colors inherit from context.
+ * Product Search element styles. Self-contained; colors inherit from context.
+ * Layouts: attached (button beside) · below (button under) · compact (icon inside).
  */
 .upwc-product-search {
 	display: flex;
-	align-items: center;
+	align-items: stretch;
 	max-width: 22rem;
-	border: 1px solid rgba(0, 0, 0, 0.15);
+	border: 1px solid rgba( 0, 0, 0, 0.15 );
 	border-radius: 4px;
 	overflow: hidden;
 }
+.upwc-product-search--full { max-width: none; }
+
 .upwc-product-search__field {
 	flex: 1 1 auto;
 	min-width: 0;
@@ -24,13 +27,60 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	padding: 0 0.7em;
-	height: 100%;
-	min-height: 2.4em;
+	gap: 0.4em;
+	padding: 0 0.85em;
 	border: 0;
 	background: transparent;
 	color: inherit;
 	cursor: pointer;
+	font: inherit;
+	line-height: 1;
 }
-.upwc-product-search__submit:hover { opacity: 0.7; }
+.upwc-product-search__submit:hover { opacity: 0.85; }
 .upwc-product-search__icon { display: block; }
+.upwc-product-search__btntext { white-space: nowrap; }
+
+/* --- Sizes (field padding + font) --- */
+.upwc-product-search--sm .upwc-product-search__field { padding: 0.4em 0.6em; font-size: 0.875rem; }
+.upwc-product-search--lg .upwc-product-search__field { padding: 0.7em 0.95em; font-size: 1.075rem; }
+
+/* --- Field shape (corner rounding) --- */
+.upwc-product-search--shape-pill    { border-radius: 999px; }
+.upwc-product-search--shape-rounded { border-radius: 10px; }
+.upwc-product-search--shape-square  { border-radius: 0; }
+.upwc-product-search--shape-pill .upwc-product-search__submit { padding-right: 1.1em; }
+
+/* --- Layout: Below (field on top, full-width button beneath) --- */
+.upwc-product-search--below {
+	flex-direction: column;
+	align-items: stretch;
+	border: 0;
+	overflow: visible;
+	gap: 0.5rem;
+}
+.upwc-product-search--below .upwc-product-search__field {
+	border: 1px solid rgba( 0, 0, 0, 0.15 );
+	border-radius: inherit;
+	padding: 0.55em 0.75em;
+}
+.upwc-product-search--below.upwc-product-search--sm .upwc-product-search__field { padding: 0.4em 0.6em; }
+.upwc-product-search--below.upwc-product-search--lg .upwc-product-search__field { padding: 0.7em 0.95em; }
+.upwc-product-search--below .upwc-product-search__submit {
+	justify-content: center;
+	padding: 0.5em 1em;
+	border-radius: inherit;
+}
+
+/* --- Layout: Compact (plain icon button hugging the field's inner edge) --- */
+.upwc-product-search--compact .upwc-product-search__submit { padding: 0 0.7em; }
+
+/* When the submit is a themed .btn preset, drop the bar's own border/overflow so
+   the button keeps its own shape (Attached / Below layouts). */
+.upwc-product-search:not(.upwc-product-search--below) .upwc-product-search__submit.btn {
+	border-radius: 0;
+}
+.upwc-product-search--below .upwc-product-search__submit.btn { border-radius: inherit; }
+
+/* Alignment wrapper is a plain block; the form stays inline-flex sized. */
+.upwc-product-search-align > .upwc-product-search { display: inline-flex; vertical-align: top; text-align: left; }
+.upwc-product-search-align > .upwc-product-search--full { display: flex; }

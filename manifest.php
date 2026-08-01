@@ -11,7 +11,7 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.23';
+$manifest['version']     = '1.0.52';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';
@@ -38,6 +38,94 @@ $manifest['requires_wp']  = '5.8';
 
 /**
  * Changelog
+ *
+ * 1.0.52 - Product Filters element is now a filter PANEL, not a single widget. [wc_product_filters]
+ *          previously rendered one Woo filter widget (price OR rating OR one attribute…) per element.
+ *          It now takes an ordered, drag-sortable STACK of filter blocks (add Price, Rating, Active
+ *          Filters, and one block per Attribute — e.g. price + Color + Size in one sidebar element),
+ *          each with its own optional heading, wrapped in a styled panel: a Panel Title, a Card Box
+ *          Style preset skin, optional dividers between blocks, and optional Collapsible blocks (each
+ *          title toggles its block, a tiny event-delegated script). The attribute is now picked from a
+ *          select of the store's product attributes. Legacy single-filter instances still render via a
+ *          back-compat fallback. Filter widgets still only function on shop / product-category pages,
+ *          where they filter the listing. Inert when WooCommerce is inactive.
+ *
+ * 1.0.51 - Product Search element gains layout + style controls. [wc_product_search] had only a
+ *          placeholder; it now offers three layouts (Attached button, Button below, Compact icon),
+ *          field Shape (default / pill / rounded / square) and Size, a themed submit Button Style
+ *          preset (Attached / Below), Width (auto / full) and Alignment, plus a custom Button Label
+ *          and Button Icon (icon-picker, default magnifier). Still self-contained, product-scoped
+ *          (post_type=product) markup. Inert when WooCommerce is inactive.
+ *
+ * 1.0.50 - Add to Cart Button element gains the full Button Style system. [wc_add_to_cart] previously
+ *          emitted WooCommerce's raw [add_to_cart] (a bare button styled only by the theme). It now
+ *          renders our own themed <a> — keeping the WooCommerce AJAX add-to-cart behavior (the
+ *          add_to_cart_button / ajax_add_to_cart classes + data attributes; variable / grouped /
+ *          external products link to the product page) — while wearing the same Button Style presets,
+ *          Size, Shape, Width and Alignment as the [button] shortcode, via the shared
+ *          sc_button_style_field() / sc_button_style_atts() helpers. Adds a custom Button Label and a
+ *          Show Price (before / after) option. Inert when WooCommerce is inactive.
+ *
+ * 1.0.49 - Product Categories element rebuilt on the flexible CARD model. [wc_product_categories]
+ *          previously emitted WooCommerce's raw [product_categories] (a fixed, unstyled loop grid).
+ *          It now composes each category card from the shared Card Rows designer (Image / Name /
+ *          Product Count / Button slots) with a live wireframe preview, a Card Box Style preset
+ *          (border / corners / shadow / fill + hover), Image Ratio/Size, and Grid controls (columns,
+ *          gap, alignment) — the same building blocks as Products, but with category data and its own
+ *          lightweight grid stylesheet. Query controls (number, order, parent, specific IDs, hide
+ *          empty) stay in the Content tab. Inert when WooCommerce is inactive.
+ *
+ * 1.0.48 - Single Product element rebuilt on the shared card engine. [wc_product] previously just
+ *          emitted WooCommerce's raw [product id] (an unstyled loop tile with no options). It now
+ *          renders ONE product through the SAME engine as [wc_products] (upwc_wc_products_card), so
+ *          it gains the full Card tab: the Card Rows layout designer + live wireframe preview, Card
+ *          Box Style presets, Image Ratio/Size, the shared Rating engine (symbol / colors / size),
+ *          badges, Quick View and AJAX add-to-cart. The grid-only concerns (source query, columns,
+ *          pagination, carousel) are omitted since they don't apply to one product, so the element
+ *          exposes Content (product picker) + Card + Animations + Advanced. The Card-tab option
+ *          groups were extracted to a shared helper (upwc_wc_card_option_groups() in helpers.php)
+ *          that both elements call, so their card model is one source of truth and can never drift.
+ *
+ * 1.0.33 - Products element: a LIVE card preview in the builder. The Card tab now shows a schematic
+ *          wireframe of the product card above the Card Rows designer, redrawing in real time as you
+ *          add / reorder rows and slots and change each row's direction (inline / stacked),
+ *          distribution and alignment. It reflects structure — which slots and where — not real
+ *          product data; pure client-side (card-preview.js, no AJAX), enqueued only on the
+ *          post-edit screens. Helps make the abstract row/slot model legible while editing.
+ *
+ * 1.0.30 - Products element: the product CARD is now ROWS-ONLY, plus a Box Preset skin. The Card
+ *          tab's Classic/Slot "Card Layout" toggle and the per-element PRESENCE switches (Price,
+ *          Star Rating, Rating Number, Short Description, Quick View, Add to Cart, Wishlist, Stock)
+ *          were REMOVED — they had never been used and double-controlled what the Card Rows designer
+ *          already owns. Presence is now simply "is the slot in a row" (a slot renders when it's in a
+ *          row and the product has that data; remove the slot to hide it). A new "Card Box Style"
+ *          option applies a reusable Box Preset (border, corners, shadow, fill + hover effects) to
+ *          every card — the native, on-brand way to skin the card instead of hand-CSS (managed in
+ *          Theme Settings -> Components -> Box Presets). The Card tab is now Card Layout (Card Rows +
+ *          Box Style + Image Ratio/Size), Badges (which badge TYPES show in the badges slot), and Add
+ *          to Cart (label) — the kept toggles configure content within a slot, not presence.
+ *
+ * 1.0.28 - Products element: an "Image Size" option (Card tab → Card Layout) sets the product
+ *          image width — empty = auto (fills the column, unchanged); a width sizes the image on a
+ *          slot layout and caps it on the classic layout. It pairs with Image Ratio (ratio owns the
+ *          shape, size owns the scale), emitted as a --upwc-img-size custom property on the grid.
+ *          The Products options were also reorganised by concern into Content (which products),
+ *          Grid (how the grid arranges), and Card (Elements / Badges / Card Layout) tabs — a
+ *          UI-only regrouping; every option id is unchanged, so saved values are unaffected.
+ *
+ * 1.0.24 - Products element: a slot-based Card Layout DESIGNER. Set "Card Layout" (Style tab) to
+ *          "Slot layout" to build the product card from an editable, drag-sortable list of ROWS
+ *          ("Card Rows" addable-popup). Each row picks & orders its SLOTS (Badge/Ribbon, Wishlist,
+ *          Image, Title, Description, Star Rating, Rating Number, Price, Add to Cart, Quick View
+ *          — via a multi-select) and sets how they lay out: Direction (inline / stacked), Distribute
+ *          (start / center / space-between / end) and Align. It ships seeded with a four-row default
+ *          (badge+wishlist header · stacked media+title+desc · rating+score · price+cart), and the
+ *          empty "Classic" default keeps the fixed legacy markup for back-compat. Slotted cards
+ *          reset the legacy absolute-badge / aspect-ratio CSS so the row layout and the skin control
+ *          freely. Also adds a "Rating Number" option (the average score, e.g. 4.9, next to the stars)
+ *          and replaces the WooCommerce star markup with our own (no "Rated X out of 5" screen-reader
+ *          text leaking into the visible card). The row schema is intentionally the shape the Site
+ *          Converter can emit from a captured product card — structure here, visual skin in CSS/tokens.
  * -----------------------------------------------------------------------------
  * 1.0.22 - Mini Cart custom empty state. WooCommerce's mini-cart template has no
  *          hook for its empty branch (just a hardcoded "No products in the cart."),

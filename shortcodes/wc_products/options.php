@@ -2,6 +2,14 @@
 	die( 'Forbidden' );
 }
 
+// SVG flex-diagram icons for the Card Rows designer (Direction / Distribute / Align pickers).
+// Derive the URL from this file's location (robust whether or not the WooCommerce extension
+// object is resolvable at options-parse time).
+$upwc_layout_img = plugins_url( 'static/img/layout', __FILE__ );
+$upwc_swatch     = function ( $file, $title ) use ( $upwc_layout_img ) {
+	return array( 'small' => array( 'src' => $upwc_layout_img . '/' . $file, 'height' => 34, 'title' => $title ) );
+};
+
 /*
 |--------------------------------------------------------------------------
 | Product category choices — populated from the product_cat taxonomy.
@@ -38,6 +46,16 @@ if ( ! function_exists( 'upwc_products_switch' ) ) {
 	}
 }
 
+/*
+ * Tab map (organised by concern):
+ *   Content    — WHICH products (source + order / query).
+ *   Grid       — HOW the grid arranges (layout, columns, gap, alignment, pagination, arrows).
+ *   Card       — WHAT each card shows: Elements (content bits) · Badges (corner overlays) ·
+ *                Card Layout (the slot designer + image ratio & size).
+ *   Animations / Advanced — framework tabs.
+ * Option ids are unchanged from the previous single-tab layout — this is a UI regrouping only,
+ * so saved values and the renderer are unaffected.
+ */
 $options = array(
 
 	'tab_content' => array(
@@ -139,52 +157,25 @@ $options = array(
 					),
 				),
 			),
-			'group_display' => array(
-				'type'    => 'group',
-				'options' => array(
-					'show_sale_badge'    => upwc_products_switch( __( 'Sale Badge', 'fw' ), __( 'Show a "Sale" badge on discounted products.', 'fw' ) ),
-					'badge_style'        => array(
-						'type'    => 'select',
-						'label'   => __( 'Sale Badge Style', 'fw' ),
-						'desc'    => __( 'Text shows "Sale"; Percent shows the discount (e.g. -25%).', 'fw' ),
-						'choices' => array(
-							'text'    => __( 'Text ("Sale")', 'fw' ),
-							'percent' => __( 'Percent ("-25%")', 'fw' ),
-						),
-						'value'   => 'text',
-					),
-					'show_featured_badge' => upwc_products_switch( __( 'Featured Badge', 'fw' ), __( 'Show a "Featured" badge on featured products.', 'fw' ), 'no' ),
-					'show_new_badge'     => upwc_products_switch( __( 'New Badge', 'fw' ), __( 'Show a "New" badge on recently published products.', 'fw' ), 'no' ),
-					'new_days'           => array(
-						'type'            => 'text',
-						'label'           => __( 'New For (days)', 'fw' ),
-						'desc'            => __( 'A product counts as "New" for this many days after publishing.', 'fw' ),
-						'value'           => '14',
-						'dynamic_content' => false,
-					),
-					'show_stock'         => upwc_products_switch( __( 'Stock Status', 'fw' ), __( 'Show "Out of stock" and low-stock ("Only N left") notices on cards.', 'fw' ), 'no' ),
-					'show_quick_view'    => upwc_products_switch( __( 'Quick View', 'fw' ), __( 'Add a "Quick View" button that opens the product in a modal.', 'fw' ), 'no' ),
-					'show_rating'        => upwc_products_switch( __( 'Star Rating', 'fw' ), __( 'Show the average star rating (when a product has reviews).', 'fw' ) ),
-					'show_price'         => upwc_products_switch( __( 'Price', 'fw' ) ),
-					'show_add_to_cart'   => upwc_products_switch( __( 'Add to Cart Button', 'fw' ) ),
-				),
-			),
 		),
 	),
 
-	'tab_style' => array(
-		'title'   => __( 'Style', 'fw' ),
+	'tab_grid' => array(
+		'title'   => __( 'Grid', 'fw' ),
 		'type'    => 'tab',
 		'options' => array(
 			'group_grid' => array(
 				'type'    => 'group',
 				'options' => array(
 					'layout'      => array(
-						'type'    => 'select',
+						'type'    => 'image-picker',
 						'label'   => __( 'Layout', 'fw' ),
 						'desc'    => __( 'Grid wraps products into rows; Carousel lays them in a horizontal swipe/scroll row with optional arrows.', 'fw' ),
-						'choices' => array( 'grid' => __( 'Grid', 'fw' ), 'carousel' => __( 'Carousel', 'fw' ) ),
 						'value'   => 'grid',
+						'choices' => array(
+							'grid'     => array( 'small' => array( 'src' => $upwc_layout_img . '/grid.svg',     'height' => 52, 'title' => __( 'Grid', 'fw' ) ) ),
+							'carousel' => array( 'small' => array( 'src' => $upwc_layout_img . '/carousel.svg', 'height' => 52, 'title' => __( 'Carousel', 'fw' ) ) ),
+						),
 					),
 					'columns'     => array(
 						'type'    => 'select',
@@ -192,17 +183,6 @@ $options = array(
 						'desc'    => __( 'Products per row (Grid) or visible slides (Carousel) on desktop; collapses on smaller screens.', 'fw' ),
 						'choices' => array( '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6' ),
 						'value'   => '4',
-					),
-					'carousel_arrows' => upwc_products_switch( __( 'Carousel Arrows', 'fw' ), __( 'Show prev / next arrows on the Carousel layout.', 'fw' ), 'yes' ),
-					'pagination'  => array(
-						'type'    => 'select',
-						'label'   => __( 'Pagination', 'fw' ),
-						'desc'    => __( 'Grid layout only: add a "Load More" button to reveal more products via AJAX.', 'fw' ),
-						'choices' => array(
-							'none'      => __( 'None', 'fw' ),
-							'load_more' => __( 'Load More', 'fw' ),
-						),
-						'value'   => 'none',
 					),
 					'gap'         => array(
 						'type'    => 'select',
@@ -213,18 +193,6 @@ $options = array(
 							'lg' => __( 'Large', 'fw' ),
 						),
 						'value'   => 'md',
-					),
-					'image_ratio' => array(
-						'type'    => 'select',
-						'label'   => __( 'Image Ratio', 'fw' ),
-						'desc'    => __( 'Crop product images to a uniform aspect ratio, or keep their natural proportions.', 'fw' ),
-						'choices' => array(
-							'auto'      => __( 'Natural', 'fw' ),
-							'square'    => __( 'Square (1:1)', 'fw' ),
-							'portrait'  => __( 'Portrait (3:4)', 'fw' ),
-							'landscape' => __( 'Landscape (4:3)', 'fw' ),
-						),
-						'value'   => 'auto',
 					),
 					'alignment'   => function_exists( 'sc_alignment_field' )
 						? sc_alignment_field(
@@ -245,9 +213,26 @@ $options = array(
 							),
 							'value'   => '',
 						),
+					'pagination'  => array(
+						'type'    => 'select',
+						'label'   => __( 'Pagination', 'fw' ),
+						'desc'    => __( 'Grid layout only: add a "Load More" button to reveal more products via AJAX.', 'fw' ),
+						'choices' => array(
+							'none'      => __( 'None', 'fw' ),
+							'load_more' => __( 'Load More', 'fw' ),
+						),
+						'value'   => 'none',
+					),
+					'carousel_arrows' => upwc_products_switch( __( 'Carousel Arrows', 'fw' ), __( 'Show prev / next arrows on the Carousel layout.', 'fw' ), 'yes' ),
 				),
 			),
 		),
+	),
+
+	'tab_card' => array(
+		'title'   => __( 'Card', 'fw' ),
+		'type'    => 'tab',
+		'options' => function_exists( 'upwc_wc_card_option_groups' ) ? upwc_wc_card_option_groups() : array(),
 	),
 
 	'tab_animation' => array(

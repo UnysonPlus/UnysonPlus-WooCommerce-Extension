@@ -1,0 +1,68 @@
+/**
+ * Product Filters panel — a stack of WooCommerce filter widgets. Self-contained;
+ * colors inherit from context. The widget internals are Woo's own markup.
+ */
+.upwc-product-filters {
+	display: block;
+}
+.upwc-product-filters__title {
+	margin: 0 0 0.75rem;
+	font-size: 1.1rem;
+}
+
+/* Each filter block (one widget). */
+.upwc-product-filters .upwc-pf__block {
+	margin: 0;
+	padding: 0 0 1rem;
+}
+.upwc-product-filters .upwc-pf__block:last-child {
+	padding-bottom: 0;
+}
+.upwc-product-filters .upwc-pf__block + .upwc-pf__block {
+	padding-top: 1rem;
+}
+/* Divider line between blocks. */
+.upwc-product-filters--divided .upwc-pf__block + .upwc-pf__block {
+	border-top: 1px solid rgba( 0, 0, 0, 0.1 );
+}
+
+/* Block heading. */
+.upwc-product-filters .upwc-pf__block-title {
+	margin: 0 0 0.6rem;
+	font-size: 0.95rem;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+/* Collapsible: the title is a full-width toggle button with a chevron. */
+.upwc-product-filters--collapsible .upwc-pf__block-title {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	cursor: pointer;
+}
+.upwc-product-filters--collapsible .upwc-pf__block-title::after {
+	content: "";
+	width: 0.5em;
+	height: 0.5em;
+	margin-left: 0.5em;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate( 45deg );
+	transition: transform 0.15s ease;
+}
+.upwc-product-filters--collapsible .upwc-pf__block.is-collapsed .upwc-pf__block-title::after {
+	transform: rotate( -45deg );
+}
+/* Collapsed: hide everything in the block except its title button. */
+.upwc-product-filters--collapsible .upwc-pf__block.is-collapsed > :not(.upwc-pf__block-title) {
+	display: none;
+}
