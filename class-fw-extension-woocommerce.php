@@ -136,6 +136,9 @@ class FW_Extension_Woocommerce extends FW_Extension {
 	public function _ajax_load_more() {
 		check_ajax_referer( 'upwc_wc_products', 'nonce' );
 
+		// Shop pagination — same shape as the posts load-more above.
+		fw_rate_limit_ajax( 'wc_products_load_more', 60, 60 );
+
 		if ( ! function_exists( 'upwc_wc_products_resolve' ) ) {
 			wp_send_json_error();
 		}
@@ -176,6 +179,10 @@ class FW_Extension_Woocommerce extends FW_Extension {
 	 */
 	public function _ajax_quick_view() {
 		check_ajax_referer( 'upwc_wc_products', 'nonce' );
+
+		// Quick view renders a whole product template per call, so it is the more
+		// expensive of the two WooCommerce endpoints and gets the tighter limit.
+		fw_rate_limit_ajax( 'wc_quick_view', 40, 60 );
 
 		$id      = isset( $_POST['product'] ) ? (int) $_POST['product'] : 0;
 		$product = $id ? wc_get_product( $id ) : null;
