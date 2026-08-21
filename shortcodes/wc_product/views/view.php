@@ -11,16 +11,25 @@
  */
 
 if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'upwc_wc_products_resolve' ) || ! function_exists( 'upwc_wc_products_card' ) ) {
+	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+		echo sc_editor_notice( __( 'WooCommerce is not active, so this element cannot render.', 'fw' ) );
+	}
 	return;
 }
 
 $product_id = isset( $atts['product'] ) ? (int) $atts['product'] : 0;
 if ( $product_id < 1 ) {
+	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+		echo sc_editor_notice( __( 'Choose a product.', 'fw' ) );
+	}
 	return;
 }
 
 $product = wc_get_product( $product_id );
 if ( ! $product ) {
+	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+		echo sc_editor_notice( __( 'That product no longer exists.', 'fw' ) );
+	}
 	return;
 }
 

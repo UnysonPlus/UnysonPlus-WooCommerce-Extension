@@ -13,11 +13,18 @@ if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'wc_get_product' ) ) 
 
 $product_id = isset( $atts['product'] ) ? (int) $atts['product'] : 0;
 if ( $product_id < 1 ) {
+	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+		echo sc_editor_notice( __( 'Choose a product for this button.', 'fw' ) );
+	}
 	return;
 }
 
 $product = wc_get_product( $product_id );
 if ( ! $product ) {
+	// The quiet one: a product deleted after this block was placed.
+	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+		echo sc_editor_notice( __( 'That product no longer exists.', 'fw' ) );
+	}
 	return;
 }
 

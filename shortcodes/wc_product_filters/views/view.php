@@ -7,7 +7,10 @@
  * archives; on other pages they may render little or nothing. In scope: $atts.
  */
 
-if ( ! class_exists( 'WooCommerce' ) ) {
+if ( ! class_exists( 'WooCommerce' )  ) {
+	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+		echo sc_editor_notice( __( 'WooCommerce is not active, so this element cannot render.', 'fw' ) );
+	}
 	return;
 }
 
@@ -99,6 +102,11 @@ foreach ( $blocks as $b ) {
 }
 
 if ( '' === trim( $blocks_html ) ) {
+	// The filter widgets render nothing when there is nothing to filter — no
+	// products, or no attributes and categories in use yet.
+	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+		echo sc_editor_notice( __( 'No filters to show yet — filters are built from the attributes and categories your products use.', 'fw' ) );
+	}
 	return;
 }
 

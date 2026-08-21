@@ -10,6 +10,9 @@
  */
 
 if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'upwc_wc_products_resolve' ) ) {
+	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+		echo sc_editor_notice( __( 'WooCommerce is not active, so this element cannot render.', 'fw' ) );
+	}
 	return;
 }
 
@@ -22,6 +25,15 @@ if ( $args === false ) {
 $query = new WP_Query( $args );
 if ( ! $query->have_posts() ) {
 	wp_reset_postdata();
+	// Distinguish an empty shop from a query that excluded everything — the fix
+	// is different, and neither is visible from an empty block.
+	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+		echo sc_editor_notice(
+			wp_count_posts( 'product' )->publish
+				? __( 'No products match this query — widen the category, tags or attribute filters.', 'fw' )
+				: __( 'This shop has no published products yet.', 'fw' )
+		);
+	}
 	return;
 }
 
