@@ -108,6 +108,7 @@ if ( ! function_exists( 'upwc_wc_free_shipping_threshold' ) ) {
 			}
 		}
 
+		/** Filters the detected free-shipping minimum-amount threshold used by the WooCommerce integration. */
 		return (float) apply_filters( 'upwc_wc_free_shipping_threshold', $threshold );
 	}
 }

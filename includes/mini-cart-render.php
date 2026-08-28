@@ -229,6 +229,7 @@ function upwc_mini_cart_empty_html( $empty = array() ) {
 
 	ob_start();
 	// Child action hook (fires first — a theme can output its own block here).
+	/** Fires inside the empty mini-cart render before default markup, letting a theme output its own empty-cart block. */
 	do_action( 'upwc_mini_cart_empty', $empty );
 
 	$has_pieces = ( '' !== $empty['icon_html'] || '' !== $empty['heading'] || '' !== $empty['text'] || '' !== $empty['button_label'] );
@@ -259,6 +260,7 @@ function upwc_mini_cart_empty_html( $empty = array() ) {
 	if ( '' === trim( $html ) ) {
 		$html = '<p class="woocommerce-mini-cart__empty-message">' . esc_html__( 'No products in the cart.', 'fw' ) . '</p>';
 	}
+	/** Filters the rendered empty mini-cart HTML before it is returned. */
 	return apply_filters( 'upwc_mini_cart_empty_html', $html, $empty );
 }
 endif;
