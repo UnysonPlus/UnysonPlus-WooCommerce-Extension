@@ -7,11 +7,11 @@ $manifest = [];
 $manifest['name']        = __( 'WooCommerce', 'fw' );
 $manifest['slug']        = 'unysonplus-woocommerce';
 $manifest['description'] = __(
-	'Integrates WooCommerce with the Unyson+ framework. Makes any active theme WooCommerce-aware and adds a WooCommerce Elements tab to the page builder — product grids & carousels, single product, categories, add-to-cart, cart icon & mini-cart, the cart / checkout / account / order-tracking pages, product search and filters — plus a shop settings page. Inert until WooCommerce is installed and active.',
+	'Integrates WooCommerce with the Unyson+ framework. Makes any active theme WooCommerce-aware and adds a WooCommerce Elements tab to the page builder — product grids & carousels, single product, categories, add-to-cart, cart icon & mini-cart, wishlist, compare, upsells, the cart / checkout / account / order-tracking pages, product search and AJAX filters — plus shopper tools (wishlist, compare, variation swatches, sticky add-to-cart, back-in-stock notifications, size guide), catalog mode, widgets and a shop settings page. Inert until WooCommerce is installed and active.',
 	'fw'
 );
 
-$manifest['version']     = '1.0.58';
+$manifest['version']     = '1.0.68';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';
@@ -31,13 +31,92 @@ $manifest['text_domain']  = 'fw';
 $manifest['requires_php'] = '7.4';
 $manifest['requires_wp']  = '5.8';
 
-// NOTE: a `requirements => [ 'extensions' => [ 'shortcodes' => [] ] ]` gate will
-// be added in Phase 2, when this extension ships its page-builder shop elements
-// (which depend on the shortcodes extension). Phase 1 only provides the
-// theme-agnostic WooCommerce-support fallback, which has no such dependency.
+// The page-builder shop elements in shortcodes/ are registered through the
+// shortcodes extension, so it is a hard dependency: without it the elements
+// simply would not exist, with nothing on screen explaining why.
+$manifest['requirements'] = array(
+	'extensions' => array(
+		'shortcodes' => array(),
+	),
+);
 
 /**
  * Changelog
+ *
+ * 1.0.68 - Settings page reorganised into TABS (Catalog / Behavior / Catalog Mode / Shopper
+ *          Tools) — one flat column of boxes had stopped being navigable now that the
+ *          extension carries four groups of settings. Every panel lives in one form, so
+ *          switching tabs never loses an edit and Save covers the whole page; the tab is
+ *          in the URL hash, so a particular tab can be linked. Also declared the
+ *          shortcodes extension as a hard requirement in the manifest: the 18 page-builder
+ *          elements are registered through it, and without it they silently did not exist.
+ *
+ * 1.0.67 - New "Upsells" element. Shows the upsells (or cross-sells) of the product being
+ *          viewed, so a single-product layout built in the page builder can place them
+ *          deliberately instead of accepting wherever the template drops them. Restores
+ *          the single-product globals afterwards, so every template hook that runs after
+ *          it still sees the right product.
+ *
+ * 1.0.66 - Classic WIDGETS: Mini Cart, Products and Wishlist. Everything the extension
+ *          offered was page-builder only, which left nothing for a theme's real sidebar or
+ *          a footer widget area. Each wraps the same renderer its element uses, so a
+ *          widget and an element cannot drift apart.
+ *
+ * 1.0.65 - AJAX filtering for the Product Filters panel (on by default, per element). A
+ *          filter widget is a set of links to the same page with query args, so the panel
+ *          now FETCHES that URL and swaps in the product list and the panel itself — which
+ *          means it works identically on a shop archive, a category, and a builder page
+ *          carrying a [wc_products] grid, with no new server endpoint. The browser URL
+ *          still updates (linkable, bookmarkable, back/forward works) and every failure
+ *          path falls back to an ordinary page load, so a filter can never do nothing.
+ *
+ * 1.0.64 - SIZE GUIDE: a link beside the add-to-cart opening measurements in a modal, with
+ *          per-product content (a Size Guide box on the product editor) falling back to a
+ *          store-wide default. The link is not rendered at all when neither carries
+ *          content, so it can never open an empty modal.
+ *
+ * 1.0.63 - STICKY ADD-TO-CART bar on single products: a compact bar with the product name,
+ *          price and buy button that slides in once the real add-to-cart has scrolled out
+ *          of view — on a long product page everything that persuades someone to buy is
+ *          below the control they need. Top or bottom, optional thumbnail. A variable
+ *          product's bar scrolls back to the form rather than pretending to add something
+ *          before a variation has been chosen.
+ *
+ * 1.0.62 - VARIATION SWATCHES. Colour dots, image swatches or labelled buttons in place of
+ *          the variation dropdowns, chosen from the term data rather than a per-attribute
+ *          setting screen (and reading the meta keys the common swatch plugins write, so a
+ *          store migrating from one keeps its swatches). Optionally on shop cards too,
+ *          where each swatch opens the product with that option preselected. Past a
+ *          threshold of options the dropdown stays, because sixty swatches is worse than
+ *          the select it replaced. The swatches drive WooCommerce's OWN hidden select, so
+ *          variation matching, price, gallery and add-to-cart all behave natively — none
+ *          of the variation logic is reimplemented here.
+ *
+ * 1.0.61 - BACK-IN-STOCK notifications. An out-of-stock product now offers an email field
+ *          instead of a dead "Out of stock" line, and everyone who signed up is mailed
+ *          automatically the moment it is restocked — including when the restock comes
+ *          from a CSV import, the REST API or a refunded order, since it hooks the stock
+ *          status rather than the product editor. A variation coming back counts as the
+ *          parent being back. The list is cleared before sending, so a second stock change
+ *          mid-run cannot send everything twice, and each recipient gets their own message
+ *          rather than sharing a BCC with strangers.
+ *
+ * 1.0.60 - COMPARE. Pick a few products, see them side by side with their price, stock,
+ *          rating and every attribute any of them declares. A bar along the bottom of the
+ *          screen tracks the selection and the new Compare element renders the table.
+ *          Session-lifetime cookie for everyone: the question it answers stops mattering
+ *          once it is answered, so there is no list to manage afterwards. Refuses to go
+ *          past the configured maximum rather than silently dropping the oldest pick.
+ *
+ * 1.0.59 - The WISHLIST is real. The "Wishlist Heart" card slot has existed since the Card
+ *          Rows engine landed but rendered as a decorative aria-hidden span — a control
+ *          that promised something the store could not do. It is now a working toggle on
+ *          product cards, shop-loop cards and single products, with a Wishlist element to
+ *          view the list, a Wishlist Link header/footer element and a widget. Signed-in
+ *          shoppers keep their list on their account; guests keep a 90-day cookie, and it
+ *          MERGES into their account when they sign in rather than being lost at the login
+ *          step. State is hydrated client-side so the markup stays identical for everyone
+ *          and safe to cache.
  *
  * 1.0.58 - Catalog Mode grew the two things a lookbook actually needs. An optional
  *          ENQUIRY BUTTON (Enquiry Button / Text / Link settings) drops into the exact

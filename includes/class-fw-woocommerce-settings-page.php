@@ -141,6 +141,35 @@ class FW_Woocommerce_Settings_Page {
 	}
 
 	/**
+	 * The schema's top-level tabs. Anything not in a tab (an older schema, or a
+	 * setting added at the top level by mistake) is collected under a General
+	 * tab rather than silently dropped from the page.
+	 *
+	 * @return array<string,array>
+	 */
+	protected function tabs() {
+		$tabs  = array();
+		$loose = array();
+
+		foreach ( (array) $this->extension->get_settings_options() as $key => $entry ) {
+			if ( is_array( $entry ) && isset( $entry['type'] ) && 'tab' === $entry['type'] ) {
+				$tabs[ $key ] = $entry;
+			} else {
+				$loose[ $key ] = $entry;
+			}
+		}
+
+		if ( $loose ) {
+			$tabs['general_tab'] = array(
+				'title'   => __( 'General', 'fw' ),
+				'options' => $loose,
+			);
+		}
+
+		return $tabs;
+	}
+
+	/**
 	 * @internal
 	 */
 	public function render() {
@@ -148,13 +177,14 @@ class FW_Woocommerce_Settings_Page {
 			return;
 		}
 
-		$options = (array) $this->extension->get_settings_options();
-		$values  = (array) fw_get_db_ext_settings_option( 'woocommerce' );
+		$tabs   = $this->tabs();
+		$values = (array) fw_get_db_ext_settings_option( 'woocommerce' );
+		$first  = true;
 		?>
 		<div class="wrap fw-ext-woocommerce-settings">
 			<h1 class="wp-heading-inline"><?php esc_html_e( 'WooCommerce Settings', 'fw' ); ?></h1>
 			<p class="description">
-				<?php esc_html_e( 'Shop catalog layout, single-product gallery, and shop behavior. Every field has a working default — you only need to change what you want to differ from what the store already does.', 'fw' ); ?>
+				<?php esc_html_e( 'Shop catalog layout, single-product gallery, shop behavior and shopper tools. Every field has a working default — you only need to change what you want to differ from what the store already does.', 'fw' ); ?>
 			</p>
 
 			<?php if ( isset( $_GET['fw-saved'] ) ) : ?>
@@ -163,14 +193,28 @@ class FW_Woocommerce_Settings_Page {
 				</div>
 			<?php endif; ?>
 
+			<h2 class="nav-tab-wrapper fw-wc-tabs">
+				<?php foreach ( $tabs as $tab_id => $tab ) : ?>
+					<a href="#<?php echo esc_attr( $tab_id ); ?>"
+					   class="nav-tab<?php echo $first ? ' nav-tab-active' : ''; ?>"
+					   data-tab="<?php echo esc_attr( $tab_id ); ?>"><?php echo esc_html( isset( $tab['title'] ) ? $tab['title'] : $tab_id ); ?></a>
+					<?php $first = false; ?>
+				<?php endforeach; ?>
+			</h2>
+
 			<form method="post" action="">
 				<?php wp_nonce_field( self::NONCE ); ?>
-				<div class="metabox-holder">
-					<?php
-					// phpcs:ignore WordPress.Security.EscapeOutput -- the options renderer escapes.
-					echo fw()->backend->render_options( $options, $values );
-					?>
-				</div>
+				<?php $first = true; foreach ( $tabs as $tab_id => $tab ) : ?>
+					<div class="fw-wc-panel<?php echo $first ? ' is-active' : ''; ?>" id="panel-<?php echo esc_attr( $tab_id ); ?>">
+						<div class="metabox-holder">
+							<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput -- the options renderer escapes.
+							echo fw()->backend->render_options( (array) ( isset( $tab['options'] ) ? $tab['options'] : array() ), $values );
+							?>
+						</div>
+					</div>
+					<?php $first = false; ?>
+				<?php endforeach; ?>
 
 				<p class="submit">
 					<button type="submit" class="button button-primary"><?php esc_html_e( 'Save Changes', 'fw' ); ?></button>
@@ -179,9 +223,47 @@ class FW_Woocommerce_Settings_Page {
 		</div>
 
 		<style>
+		.fw-ext-woocommerce-settings .fw-wc-tabs{margin:.6em 0 0;border-bottom:1px solid #c3c4c7}
+		.fw-ext-woocommerce-settings .fw-wc-tabs .nav-tab{border-radius:.25rem .25rem 0 0}
 		.fw-ext-woocommerce-settings .metabox-holder{margin-top:1.2em}
 		.fw-ext-woocommerce-settings .description{max-width:46em}
+		.fw-ext-woocommerce-settings .fw-wc-panel{display:none}
+		.fw-ext-woocommerce-settings .fw-wc-panel.is-active{display:block}
 		</style>
+		<script>
+		( function () {
+			var wrap = document.querySelector( '.fw-ext-woocommerce-settings' );
+			if ( ! wrap ) { return; }
+
+			function each( list, fn ) { Array.prototype.forEach.call( list, fn ); }
+
+			function activate( tab ) {
+				each( wrap.querySelectorAll( '.fw-wc-tabs .nav-tab' ), function ( a ) {
+					a.classList.toggle( 'nav-tab-active', a.getAttribute( 'data-tab' ) === tab );
+				} );
+				each( wrap.querySelectorAll( '.fw-wc-panel' ), function ( p ) {
+					p.classList.toggle( 'is-active', p.id === 'panel-' + tab );
+				} );
+			}
+
+			each( wrap.querySelectorAll( '.fw-wc-tabs .nav-tab' ), function ( a ) {
+				a.addEventListener( 'click', function ( e ) {
+					e.preventDefault();
+					var tab = a.getAttribute( 'data-tab' );
+					activate( tab );
+					// Deep-linkable, so "check the Catalog Mode tab" can be a URL.
+					if ( window.history && window.history.replaceState ) {
+						window.history.replaceState( null, '', '#' + tab );
+					}
+				} );
+			} );
+
+			// Every panel is in ONE form, so a hidden panel still posts its fields —
+			// switching tabs never loses an edit, and Save covers the whole page.
+			var hash = ( window.location.hash || '' ).replace( /^#/, '' );
+			if ( hash && wrap.querySelector( '#panel-' + hash ) ) { activate( hash ); }
+		}() );
+		</script>
 		<?php
 	}
 }

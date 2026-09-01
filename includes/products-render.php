@@ -65,6 +65,7 @@ if ( ! function_exists( 'upwc_wc_products_resolve' ) ) {
 			'quick_view'        => true,
 			'show_excerpt'      => true,
 			'show_wishlist'     => true,
+			'show_compare'      => true,
 			'show_rating_count' => true,
 			'badge_style'     => ( isset( $atts['badge_style'] ) && $atts['badge_style'] === 'percent' ) ? 'percent' : 'text',
 			'show_featured'   => $opt( 'show_featured_badge' ),
@@ -363,8 +364,20 @@ if ( ! function_exists( 'upwc_wc_products_card_slotted' ) ) {
 
 		$slots = array();
 		$slots['badges']   = $badges ? '<span class="upwc-product__badges">' . implode( '', $badges ) . '</span>' : '';
-		$slots['wishlist'] = $r['show_wishlist']
-			? '<span class="upwc-product__wishlist" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span>'
+		// A real, clickable heart when the wishlist is on — the slot used to render
+		// a decorative aria-hidden span, i.e. a control that promised something the
+		// store could not do. It renders nothing at all when the feature is off,
+		// rather than a heart that does nothing.
+		$slots['wishlist'] = ( $r['show_wishlist'] && function_exists( 'upwc_wishlist_button_html' ) )
+			? '<span class="upwc-product__wishlist">' . upwc_wishlist_button_html( $id ) . '</span>'
+			: '';
+
+		$slots['compare'] = ( $r['show_compare'] && function_exists( 'upwc_compare_button_html' ) )
+			? '<span class="upwc-product__compare">' . upwc_compare_button_html( $id ) . '</span>'
+			: '';
+
+		$slots['swatches'] = function_exists( 'upwc_swatches_card_html' )
+			? upwc_swatches_card_html( $product )
 			: '';
 		$slots['media']    = '<a class="upwc-product__link" href="' . $href . '"><span class="upwc-product__media">' . $product->get_image( 'woocommerce_thumbnail' ) . '</span></a>';
 		$slots['title']    = '<a class="upwc-product__titlelink" href="' . $href . '"><span class="upwc-product__title">' . esc_html( $product->get_name() ) . '</span></a>';

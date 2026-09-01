@@ -1,0 +1,551 @@
+/**
+ * storefront.css — wishlist, compare, swatches, sticky add-to-cart, size guide
+ * and back-in-stock.
+ *
+ * Deliberately restrained: these controls sit inside whatever theme is active,
+ * so they inherit colour and font rather than declaring their own palette. The
+ * few colours here are neutral greys plus `currentColor`, and every surface uses
+ * the theme's own `.button` where a button belongs.
+ */
+
+/* ------------------------------------------------------------------ wishlist */
+
+.upwc-wishlist-btn,
+.upwc-compare-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: .4em;
+	padding: .35em .5em;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	line-height: 1;
+	cursor: pointer;
+	border-radius: 999px;
+	transition: color .15s ease, background-color .15s ease, transform .15s ease;
+}
+
+.upwc-wishlist-btn:hover,
+.upwc-compare-btn:hover {
+	background: rgba( 0, 0, 0, .06 );
+}
+
+.upwc-wishlist-btn:focus-visible,
+.upwc-compare-btn:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+.upwc-wishlist-btn svg {
+	transition: transform .15s ease;
+}
+
+.upwc-wishlist-btn.is-active {
+	color: #d63638;
+}
+
+.upwc-wishlist-btn.is-active svg {
+	fill: currentColor;
+	transform: scale( 1.08 );
+}
+
+.upwc-wishlist-btn.is-busy {
+	opacity: .6;
+	pointer-events: none;
+}
+
+.upwc-wishlist-single {
+	display: flex;
+	align-items: center;
+	gap: .5em;
+	margin: 1em 0;
+	flex-wrap: wrap;
+}
+
+.upwc-wishlist-single__link {
+	font-size: .9em;
+	opacity: .8;
+}
+
+.upwc-wishlist-count.is-empty {
+	display: none;
+}
+
+/* The empty state of the wishlist / compare elements. */
+.upwc-wishlist-empty,
+.upwc-compare-empty {
+	padding: 2.5em 1.5em;
+	text-align: center;
+	border: 1px dashed rgba( 0, 0, 0, .18 );
+	border-radius: .5rem;
+}
+
+.upwc-wishlist-empty p,
+.upwc-compare-empty p {
+	margin: 0 0 1em;
+	opacity: .75;
+}
+
+/* ------------------------------------------------------------------ compare */
+
+.upwc-compare-btn.is-active {
+	color: #2271b1;
+}
+
+.upwc-compare-bar {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 9998;
+	background: #fff;
+	color: #1e1e1e;
+	box-shadow: 0 -2px 18px rgba( 0, 0, 0, .16 );
+	padding: .7em 1em;
+	animation: upwc-compare-in .18s ease;
+}
+
+@keyframes upwc-compare-in {
+	from { transform: translateY( 100% ); }
+	to   { transform: translateY( 0 ); }
+}
+
+.upwc-compare-bar__inner {
+	display: flex;
+	align-items: center;
+	gap: 1em;
+	max-width: 1200px;
+	margin: 0 auto;
+	flex-wrap: wrap;
+}
+
+.upwc-compare-bar__title {
+	font-weight: 600;
+}
+
+.upwc-compare-bar__items {
+	display: flex;
+	gap: .6em;
+	flex: 1 1 auto;
+	flex-wrap: wrap;
+}
+
+.upwc-compare-bar__item {
+	display: flex;
+	align-items: center;
+	gap: .4em;
+	padding: .3em .5em;
+	border: 1px solid rgba( 0, 0, 0, .12 );
+	border-radius: .4rem;
+	font-size: .85em;
+	max-width: 15em;
+}
+
+.upwc-compare-bar__item img {
+	width: 28px;
+	height: 28px;
+	object-fit: cover;
+	border-radius: .2rem;
+}
+
+.upwc-compare-bar__item span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.upwc-compare-bar__remove,
+.upwc-compare-bar__clear,
+.upwc-compare-table__remove {
+	border: 0;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	font: inherit;
+	opacity: .6;
+	padding: 0 .2em;
+}
+
+.upwc-compare-bar__remove:hover,
+.upwc-compare-bar__clear:hover,
+.upwc-compare-table__remove:hover {
+	opacity: 1;
+}
+
+.upwc-compare-bar__actions {
+	display: flex;
+	align-items: center;
+	gap: .8em;
+}
+
+/* The table scrolls inside itself — the page must never scroll sideways. */
+.upwc-compare-table-wrap {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.upwc-compare-table {
+	width: 100%;
+	border-collapse: collapse;
+	min-width: 520px;
+}
+
+.upwc-compare-table th,
+.upwc-compare-table td {
+	padding: .8em;
+	border-bottom: 1px solid rgba( 0, 0, 0, .1 );
+	text-align: left;
+	vertical-align: middle;
+}
+
+.upwc-compare-table th {
+	width: 9em;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.upwc-compare-table__head td {
+	vertical-align: top;
+}
+
+.upwc-compare-table__head img {
+	display: block;
+	margin-bottom: .5em;
+	max-width: 160px;
+	height: auto;
+}
+
+.upwc-compare-table__name {
+	display: block;
+	font-weight: 600;
+}
+
+/* ----------------------------------------------------------------- swatches */
+
+.upwc-swatches {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .4em;
+	margin: .5em 0;
+}
+
+.upwc-swatch {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 2em;
+	height: 2em;
+	padding: 0 .5em;
+	border: 1px solid rgba( 0, 0, 0, .25 );
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-size: .85em;
+	line-height: 1;
+	cursor: pointer;
+	border-radius: .25rem;
+	text-decoration: none;
+	transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.upwc-swatch:hover {
+	border-color: currentColor;
+}
+
+.upwc-swatch.is-active {
+	border-color: currentColor;
+	box-shadow: 0 0 0 2px rgba( 0, 0, 0, .12 );
+}
+
+.upwc-swatch--color,
+.upwc-swatch--image {
+	width: 2em;
+	padding: 0;
+	overflow: hidden;
+}
+
+.upwc-swatch--color {
+	background: var( --upwc-swatch-color, #ccc );
+}
+
+.upwc-swatch--image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* Shape comes from the setting, applied on the wrapper by a body class. */
+.upwc-swatches--round .upwc-swatch--color,
+.upwc-swatches--round .upwc-swatch--image,
+body.upwc-swatch-circle .upwc-swatch--color,
+body.upwc-swatch-circle .upwc-swatch--image {
+	border-radius: 999px;
+}
+
+/* Swatches replace the select, but the select still does the work — keep it in
+   the accessibility tree while hiding it visually. */
+.upwc-swatches--select + select,
+.upwc-swatches--select ~ select {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect( 0 0 0 0 );
+	white-space: nowrap;
+	border: 0;
+}
+
+.upwc-swatches--card {
+	margin: .35em 0 0;
+}
+
+/* -------------------------------------------------------- sticky add to cart */
+
+.upwc-sticky-atc {
+	position: fixed;
+	left: 0;
+	right: 0;
+	z-index: 9997;
+	background: #fff;
+	color: #1e1e1e;
+	padding: .6em 1em;
+	box-shadow: 0 0 18px rgba( 0, 0, 0, .16 );
+}
+
+.upwc-sticky-atc--bottom { bottom: 0; }
+.upwc-sticky-atc--top    { top: 0; }
+
+.upwc-sticky-atc__inner {
+	display: flex;
+	align-items: center;
+	gap: 1em;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.upwc-sticky-atc__media img {
+	width: 44px;
+	height: 44px;
+	object-fit: cover;
+	border-radius: .3rem;
+	display: block;
+}
+
+.upwc-sticky-atc__text {
+	display: flex;
+	flex-direction: column;
+	gap: .15em;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.upwc-sticky-atc__name {
+	font-weight: 600;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.upwc-sticky-atc__price {
+	font-size: .9em;
+	opacity: .8;
+}
+
+/* A compare bar and a sticky bar would otherwise stack on the same edge. */
+.upwc-compare-bar:not( [hidden] ) ~ .upwc-sticky-atc--bottom {
+	bottom: 4.5em;
+}
+
+@media ( max-width: 600px ) {
+	.upwc-sticky-atc__price { display: none; }
+	.upwc-sticky-atc__media { display: none; }
+}
+
+/* --------------------------------------------------------------- size guide */
+
+.upwc-size-guide__open {
+	display: inline-flex;
+	align-items: center;
+	gap: .4em;
+	margin: .6em 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	font-size: .9em;
+	text-decoration: underline;
+	text-underline-offset: .2em;
+	cursor: pointer;
+}
+
+.upwc-size-guide {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1.2em;
+}
+
+/* `display: flex` beats the browser's own `[hidden] { display: none }`, so the
+   closed modal would sit invisibly over the whole page and swallow every click.
+   Same trap for any component here that both sets a display and toggles hidden. */
+.upwc-size-guide[hidden],
+.upwc-compare-bar[hidden],
+.upwc-sticky-atc[hidden] {
+	display: none !important;
+}
+
+.upwc-size-guide__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba( 0, 0, 0, .55 );
+}
+
+.upwc-size-guide__panel {
+	position: relative;
+	background: #fff;
+	color: #1e1e1e;
+	border-radius: .5rem;
+	padding: 1.6em;
+	max-width: 720px;
+	width: 100%;
+	max-height: 85vh;
+	overflow: auto;
+	box-shadow: 0 12px 40px rgba( 0, 0, 0, .3 );
+}
+
+.upwc-size-guide__close {
+	position: absolute;
+	top: .4em;
+	right: .6em;
+	border: 0;
+	background: none;
+	font-size: 1.8em;
+	line-height: 1;
+	cursor: pointer;
+	color: inherit;
+	opacity: .6;
+}
+
+.upwc-size-guide__close:hover { opacity: 1; }
+
+.upwc-size-guide__title {
+	margin: 0 0 .8em;
+	font-size: 1.25em;
+}
+
+.upwc-size-guide__content table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.upwc-size-guide__content th,
+.upwc-size-guide__content td {
+	padding: .5em .7em;
+	border: 1px solid rgba( 0, 0, 0, .12 );
+	text-align: left;
+}
+
+body.upwc-modal-open { overflow: hidden; }
+
+/* ----------------------------------------------------------- back in stock */
+
+.upwc-bis {
+	margin: 1.2em 0;
+	padding: 1em 1.2em;
+	border: 1px solid rgba( 0, 0, 0, .12 );
+	border-radius: .5rem;
+}
+
+.upwc-bis__heading {
+	margin: 0 0 .6em;
+	font-weight: 600;
+}
+
+.upwc-bis__form {
+	display: flex;
+	gap: .5em;
+	flex-wrap: wrap;
+}
+
+.upwc-bis__email {
+	flex: 1 1 14em;
+	min-width: 0;
+	padding: .55em .7em;
+	border: 1px solid rgba( 0, 0, 0, .25 );
+	border-radius: .3rem;
+	font: inherit;
+}
+
+.upwc-bis__form.is-busy { opacity: .6; pointer-events: none; }
+
+.upwc-bis__message:empty { display: none; }
+
+.upwc-bis__message {
+	margin: .7em 0 0;
+	font-size: .92em;
+}
+
+/* ------------------------------------------------------------ reduced motion */
+
+@media ( prefers-reduced-motion: reduce ) {
+	.upwc-compare-bar { animation: none; }
+
+	.upwc-wishlist-btn,
+	.upwc-wishlist-btn svg,
+	.upwc-compare-btn,
+	.upwc-swatch {
+		transition: none;
+	}
+}
+
+/* ------------------------------------------------- wishlist link (chrome) */
+
+.upwc-wishlist-link {
+	display: inline-flex;
+	align-items: center;
+	gap: .4em;
+	color: inherit;
+	text-decoration: none;
+	position: relative;
+}
+
+.upwc-wishlist-link .upwc-wishlist-count {
+	min-width: 1.5em;
+	height: 1.5em;
+	padding: 0 .35em;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 999px;
+	font-size: .7em;
+	line-height: 1;
+}
+
+/* The pill's own colour, not the inherited currentColor of the link. */
+.upwc-wishlist-link .upwc-wishlist-count {
+	color: #fff;
+	background: #d63638;
+}
+
+/* ------------------------------------------------- controls on a loop card */
+
+.upwc-loop-tools {
+	display: flex;
+	align-items: center;
+	gap: .3em;
+	flex-wrap: wrap;
+	margin: .4em 0;
+}
+
+.upwc-loop-tools .upwc-swatches {
+	flex: 1 0 100%;
+	margin: 0 0 .3em;
+}

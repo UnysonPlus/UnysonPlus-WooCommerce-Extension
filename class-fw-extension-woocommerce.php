@@ -5,8 +5,8 @@
 /**
  * WooCommerce integration extension.
  *
- * Phase 1 — foundation. Makes the framework WooCommerce-aware and provides a
- * theme-agnostic baseline so any active theme renders WooCommerce reasonably:
+ * Makes the framework WooCommerce-aware and provides a theme-agnostic baseline
+ * so any active theme renders WooCommerce reasonably:
  *
  *   - Inert unless WooCommerce is active (class_exists guard in _init()).
  *   - Generic theme-support fallback: if the ACTIVE theme hasn't declared
@@ -15,8 +15,11 @@
  *     WooCommerce-aware theme is active (e.g. unysonplus-theme, which has its
  *     own compat layer), the extension steps aside and the theme leads.
  *
- * Later phases add the page-builder shop elements (shortcodes/), a settings
- * page wired to the theme's unysonplus_woocommerce_* filters, and widgets.
+ * On top of that it ships the page-builder shop elements (shortcodes/), the
+ * shop settings page (includes/class-fw-woocommerce-settings-page.php, wired to
+ * the theme's unysonplus_woocommerce_* filters), the wishlist
+ * (includes/wishlist.php) and the storefront behaviors below — catalog mode,
+ * sticky add-to-cart, back-in-stock, compare, and variation swatches.
  */
 class FW_Extension_Woocommerce extends FW_Extension {
 
@@ -76,6 +79,19 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		require_once dirname( __FILE__ ) . '/includes/mini-cart-render.php';
 		require_once dirname( __FILE__ ) . '/includes/mini-cart-hf-element.php';
 
+		// Shopper tools. Each file is self-contained (its own settings gate, its
+		// own hooks) and does nothing until its setting is switched on, so they
+		// are loaded unconditionally and stay cheap.
+		require_once dirname( __FILE__ ) . '/includes/wishlist.php';
+		require_once dirname( __FILE__ ) . '/includes/wishlist-hf-element.php';
+		require_once dirname( __FILE__ ) . '/includes/compare.php';
+		require_once dirname( __FILE__ ) . '/includes/back-in-stock.php';
+		require_once dirname( __FILE__ ) . '/includes/swatches.php';
+		require_once dirname( __FILE__ ) . '/includes/storefront.php';
+		require_once dirname( __FILE__ ) . '/includes/widgets.php';
+
+		$this->register_storefront_hooks();
+
 		// The framework boots inside after_setup_theme (priority 10) and the
 		// plugin loads before the theme, so this _init() runs BEFORE the theme's
 		// own add_theme_support(). Defer the "did the theme declare support?"
@@ -120,6 +136,149 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		add_action( 'wp_ajax_nopriv_upwc_wc_products_load_more', array( $this, '_ajax_load_more' ) );
 		add_action( 'wp_ajax_upwc_wc_quick_view', array( $this, '_ajax_quick_view' ) );
 		add_action( 'wp_ajax_nopriv_upwc_wc_quick_view', array( $this, '_ajax_quick_view' ) );
+	}
+
+	/**
+	 * Place the shopper-tool controls on the single-product page and load their
+	 * shared assets.
+	 *
+	 * The single-product hooks are registered unconditionally; each rendering
+	 * function checks its own setting, so switching a feature on takes effect
+	 * without anything here having to know the order they were added in.
+	 */
+	private function register_storefront_hooks() {
+		// Beside the add-to-cart (priority 35 = just after it at 30).
+		add_action( 'woocommerce_single_product_summary', 'upwc_wishlist_single_button', 35 );
+		add_action( 'woocommerce_single_product_summary', 'upwc_compare_single_button', 36 );
+		add_action( 'woocommerce_single_product_summary', 'upwc_size_guide_link', 37 );
+
+		// In place of WooCommerce's dead "Out of stock" line.
+		add_action( 'woocommerce_single_product_summary', 'upwc_bis_form', 31 );
+
+		// The SHOP LOOP — WooCommerce's own archive template, which does not go
+		// through our Card Rows renderer. Without this the controls would exist
+		// only on the page-builder grids, and a plain shop page would have no way
+		// to save or compare anything.
+		add_action( 'woocommerce_after_shop_loop_item', array( $this, '_action_loop_tools' ), 15 );
+
+		if ( ! is_admin() ) {
+			add_action( 'wp_enqueue_scripts', array( $this, '_action_enqueue_storefront' ), 21 );
+			add_filter( 'body_class', array( $this, '_filter_body_class' ) );
+		}
+	}
+
+	/**
+	 * Wishlist / compare / swatches on a WooCommerce loop card.
+	 *
+	 * Each piece returns an empty string when its feature is off, so a store with
+	 * none of them on gets no wrapper at all rather than an empty div per product.
+	 *
+	 * @internal
+	 */
+	public function _action_loop_tools() {
+		global $product;
+
+		if ( ! $product instanceof WC_Product ) {
+			return;
+		}
+
+		$swatches = function_exists( 'upwc_swatches_card_html' ) ? upwc_swatches_card_html( $product ) : '';
+		$wishlist = function_exists( 'upwc_wishlist_button_html' ) ? upwc_wishlist_button_html( $product->get_id() ) : '';
+		$compare  = function_exists( 'upwc_compare_button_html' ) ? upwc_compare_button_html( $product->get_id() ) : '';
+
+		if ( '' === $swatches && '' === $wishlist && '' === $compare ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.EscapeOutput -- each piece escapes its own output.
+		echo '<div class="upwc-loop-tools">' . $swatches . $wishlist . $compare . '</div>';
+	}
+
+	/**
+	 * True when this request has anything the storefront script would drive.
+	 *
+	 * The assets are small, but a shop with every tool switched off should not
+	 * pay for them at all — and a site that only sells from one page should not
+	 * load them on the other forty.
+	 *
+	 * @return bool
+	 */
+	private function storefront_assets_needed() {
+		if ( upwc_wishlist_enabled() || upwc_compare_enabled() || upwc_swatches_enabled() ) {
+			return true;
+		}
+		if ( function_exists( 'is_product' ) && is_product() ) {
+			return upwc_sticky_atc_enabled() || upwc_size_guide_enabled() || upwc_bis_enabled();
+		}
+
+		return false;
+	}
+
+	/**
+	 * @internal
+	 */
+	public function _action_enqueue_storefront() {
+		if ( ! $this->storefront_assets_needed() ) {
+			return;
+		}
+
+		$version = $this->manifest->get_version();
+
+		wp_enqueue_style(
+			'upwc-wc-storefront',
+			fw_min_uri( $this->get_declared_URI( '/static/css/storefront.css' ) ),
+			array(),
+			$version
+		);
+
+		wp_enqueue_script(
+			'upwc-wc-storefront',
+			$this->get_declared_URI( '/static/js/storefront.js' ),
+			array(),
+			$version,
+			true
+		);
+
+		wp_localize_script(
+			'upwc-wc-storefront',
+			'upwcStorefront',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'upwc_wc_storefront' ),
+				'i18n'    => array(
+					'wishlistAdd'    => __( 'Save to wishlist', 'fw' ),
+					'wishlistRemove' => __( 'Remove from wishlist', 'fw' ),
+					'compare'        => __( 'Compare', 'fw' ),
+					'compareAdded'   => __( 'Added', 'fw' ),
+					'remove'         => __( 'Remove', 'fw' ),
+					'sending'        => __( 'Sending…', 'fw' ),
+					'error'          => __( 'Something went wrong. Please try again.', 'fw' ),
+				),
+			)
+		);
+
+		// The sticky bar's simple-product button is a real WooCommerce AJAX
+		// add-to-cart, so it needs Woo's own script wherever it appears.
+		if ( upwc_sticky_atc_enabled() && wp_script_is( 'wc-add-to-cart', 'registered' ) ) {
+			wp_enqueue_script( 'wc-add-to-cart' );
+		}
+	}
+
+	/**
+	 * Swatch shape is a store-wide choice, so it rides on the body rather than
+	 * being written into every swatch's markup.
+	 *
+	 * @param string[] $classes
+	 * @return string[]
+	 * @internal
+	 */
+	public function _filter_body_class( $classes ) {
+		if ( upwc_swatches_enabled() ) {
+			$shape     = (string) $this->get_setting( 'swatches_shape', 'circle' );
+			$classes[] = 'upwc-swatch-' . ( 'square' === $shape ? 'square' : 'circle' );
+		}
+
+		return $classes;
 	}
 
 	/**
@@ -529,6 +688,9 @@ class FW_Extension_Woocommerce extends FW_Extension {
 					'wc_product_filters',
 					'wc_account',
 					'wc_free_shipping',
+					'wc_wishlist',
+					'wc_compare',
+					'wc_upsells',
 				)
 			);
 		}

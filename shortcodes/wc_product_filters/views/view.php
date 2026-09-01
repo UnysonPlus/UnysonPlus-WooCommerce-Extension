@@ -49,7 +49,12 @@ $divider     = ! isset( $atts['divider'] ) || call_user_func( $truthy, $atts['di
 $panel_title = isset( $atts['panel_title'] ) ? trim( (string) $atts['panel_title'] ) : '';
 $box_class   = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : '';
 
+// AJAX filtering is opt-out: a filter that reloads the whole page loses the
+// visitor's scroll position, which is the main reason filtering feels slow.
+$ajax = ! isset( $atts['ajax'] ) || call_user_func( $truthy, $atts['ajax'] );
+
 $panel_classes = array( 'upwc-product-filters' );
+if ( $ajax ) { $panel_classes[] = 'upwc-product-filters--ajax'; }
 if ( $collapsible ) { $panel_classes[] = 'upwc-product-filters--collapsible'; }
 if ( $divider ) { $panel_classes[] = 'upwc-product-filters--divided'; }
 if ( '' !== $box_class ) { $panel_classes[] = $box_class; }

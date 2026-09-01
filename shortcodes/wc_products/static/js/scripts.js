@@ -42,7 +42,12 @@
 				btn.classList.remove( 'is-loading' );
 				btn.textContent = label;
 				if ( ! res || ! res.success ) { return; }
-				if ( res.data.html ) { grid.insertAdjacentHTML( 'beforeend', res.data.html ); }
+				if ( res.data.html ) {
+					grid.insertAdjacentHTML( 'beforeend', res.data.html );
+					// The new cards carry wishlist / compare controls in the "off"
+					// state; tell the storefront script to paint this visitor's on.
+					document.dispatchEvent( new CustomEvent( 'upwc:products:updated' ) );
+				}
 				btn.setAttribute( 'data-page', page );
 				if ( ! res.data.has_more ) { btn.parentNode.removeChild( btn ); }
 			} ).catch( function () { btn.classList.remove( 'is-loading' ); btn.textContent = label; } );
@@ -69,6 +74,7 @@
 		ajax( 'upwc_wc_quick_view', { product: productId } ).then( function ( res ) {
 			if ( res && res.success ) {
 				body.innerHTML = res.data.html;
+				document.dispatchEvent( new CustomEvent( 'upwc:products:updated' ) );
 				// Re-init WooCommerce's variation form for variable products.
 				// (jQuery is looked up lazily: it's only present when WooCommerce's
 				// own scripts — which depend on it — are on the page.)

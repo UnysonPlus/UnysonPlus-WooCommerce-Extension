@@ -120,6 +120,13 @@ $options = array(
 					'divider'     => function_exists( 'upwc_wc_switch' )
 						? upwc_wc_switch( __( 'Block Dividers', 'fw' ), __( 'Show a thin divider line between filter blocks.', 'fw' ), 'yes' )
 						: array( 'type' => 'switch', 'label' => __( 'Block Dividers', 'fw' ), 'value' => 'yes' ),
+					'ajax'        => function_exists( 'upwc_wc_switch' )
+						? upwc_wc_switch(
+							__( 'AJAX Filtering', 'fw' ),
+							__( 'Apply filters without a full page reload: the product list and this panel are swapped in place, and the browser URL still updates so a filtered view can be linked or bookmarked. Falls back to normal page loads if anything goes wrong.', 'fw' ),
+							'yes'
+						)
+						: array( 'type' => 'switch', 'label' => __( 'AJAX Filtering', 'fw' ), 'value' => 'yes' ),
 				),
 			),
 		),

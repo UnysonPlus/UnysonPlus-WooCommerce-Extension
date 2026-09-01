@@ -369,6 +369,8 @@ if ( ! function_exists( 'upwc_wc_card_option_groups' ) ) {
 								'choices'    => array(
 									'badges'       => __( 'Badge / Ribbon', 'fw' ),
 									'wishlist'     => __( 'Wishlist Heart', 'fw' ),
+									'compare'      => __( 'Compare Toggle', 'fw' ),
+									'swatches'     => __( 'Variation Swatches', 'fw' ),
 									'media'        => __( 'Image', 'fw' ),
 									'title'        => __( 'Title', 'fw' ),
 									'excerpt'      => __( 'Description', 'fw' ),

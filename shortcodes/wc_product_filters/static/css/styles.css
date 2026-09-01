@@ -66,3 +66,17 @@
 .upwc-product-filters--collapsible .upwc-pf__block.is-collapsed > :not(.upwc-pf__block-title) {
 	display: none;
 }
+
+/* AJAX filtering: a quiet busy state, so a slow response is visible without a
+   spinner covering the results the visitor is still reading. */
+.upwc-products.upwc-is-filtering,
+.upwc-product-filters.upwc-is-filtering {
+	opacity: .55;
+	transition: opacity .12s ease;
+	pointer-events: none;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.upwc-products.upwc-is-filtering,
+	.upwc-product-filters.upwc-is-filtering { transition: none; }
+}
