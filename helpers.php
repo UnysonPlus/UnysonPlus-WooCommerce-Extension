@@ -33,6 +33,107 @@ if ( ! function_exists( 'upwc_wc_truthy' ) ) {
 	}
 }
 
+if ( ! function_exists( 'upwc_wc_catalog_mode' ) ) {
+	/**
+	 * True when the shop is in Catalog Mode (the lookbook switch), whether or not
+	 * the stricter "Disable Purchasing" is on with it.
+	 *
+	 * Catalog Mode works by unhooking WooCommerce's own price / add-to-cart
+	 * templates, which our elements don't go through — [wc_products] calls the
+	 * loop template directly. So anything of ours that would print a price or a
+	 * cart button checks this, otherwise a "lookbook" would still be selling from
+	 * every page-builder grid on the site.
+	 *
+	 * @return bool
+	 */
+	function upwc_wc_catalog_mode() {
+		if ( ! function_exists( 'fw_get_db_ext_settings_option' ) ) {
+			return false;
+		}
+		return upwc_wc_truthy( fw_get_db_ext_settings_option( 'woocommerce', 'catalog_mode' ) );
+	}
+}
+
+if ( ! function_exists( 'upwc_wc_enquiry_html' ) ) {
+	/**
+	 * The Catalog Mode enquiry button for one product, or '' when the feature is
+	 * off / unconfigured.
+	 *
+	 * Shared by the WooCommerce template hooks (shop archives, single product) and
+	 * our own [wc_products] cards, so the button reads the same wherever the
+	 * add-to-cart it replaces used to be. The product's id / name / permalink ride
+	 * along as query args so a contact form can say what the enquiry is about;
+	 * a mailto: target gets them as a subject line instead, query args being
+	 * meaningless to a mail client.
+	 *
+	 * @param WC_Product $product
+	 * @return string
+	 */
+	function upwc_wc_enquiry_html( $product ) {
+		if ( ! function_exists( 'fw_get_db_ext_settings_option' ) || ! $product instanceof WC_Product ) {
+			return '';
+		}
+		if ( ! upwc_wc_truthy( fw_get_db_ext_settings_option( 'woocommerce', 'catalog_enquiry' ) ) ) {
+			return '';
+		}
+
+		$url = trim( (string) fw_get_db_ext_settings_option( 'woocommerce', 'catalog_enquiry_url' ) );
+		if ( '' === $url ) {
+			return '';
+		}
+
+		$label = trim( (string) fw_get_db_ext_settings_option( 'woocommerce', 'catalog_enquiry_label' ) );
+		if ( '' === $label ) {
+			$label = __( 'Request a Quote', 'fw' );
+		}
+
+		if ( 0 === strpos( strtolower( $url ), 'mailto:' ) ) {
+			$href = $url . ( false === strpos( $url, '?' ) ? '?' : '&' ) . 'subject=' . rawurlencode(
+				sprintf( __( 'Enquiry: %s', 'fw' ), $product->get_name() )
+			);
+		} else {
+			$href = add_query_arg(
+				array(
+					'product_id'  => $product->get_id(),
+					'product'     => rawurlencode( $product->get_name() ),
+					'product_url' => rawurlencode( $product->get_permalink() ),
+				),
+				$url
+			);
+		}
+
+		return sprintf(
+			'<a href="%s" class="button upwc-enquiry-btn" data-product="%d">%s</a>',
+			esc_url( $href ),
+			(int) $product->get_id(),
+			esc_html( $label )
+		);
+	}
+}
+
+if ( ! function_exists( 'upwc_wc_catalog_locked' ) ) {
+	/**
+	 * True when the shop is in LOCKED catalog mode — i.e. the "Catalog Mode"
+	 * setting is on AND "Disable Purchasing" is on with it.
+	 *
+	 * Plain Catalog Mode only hides prices / add-to-cart buttons (a lookbook that
+	 * can still technically be bought from via a crafted `?add-to-cart=` URL or a
+	 * bookmarked cart page). The locked variant additionally makes every product
+	 * non-purchasable and closes the cart / checkout, so nothing can be ordered.
+	 * Elements that only make sense in a shop that sells (cart icon, mini-cart,
+	 * add-to-cart button, cart / checkout pages) check this and render nothing.
+	 *
+	 * @return bool
+	 */
+	function upwc_wc_catalog_locked() {
+		if ( ! function_exists( 'fw_get_db_ext_settings_option' ) ) {
+			return false;
+		}
+		return upwc_wc_truthy( fw_get_db_ext_settings_option( 'woocommerce', 'catalog_mode' ) )
+			&& upwc_wc_truthy( fw_get_db_ext_settings_option( 'woocommerce', 'catalog_lock_purchasing' ) );
+	}
+}
+
 if ( ! function_exists( 'upwc_wc_product_choices' ) ) {
 	/**
 	 * Published-product choices for a select: id => "Title (#id)".

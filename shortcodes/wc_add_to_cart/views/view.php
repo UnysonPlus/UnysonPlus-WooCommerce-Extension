@@ -11,6 +11,16 @@ if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'wc_get_product' ) ) 
 	return;
 }
 
+// Catalog lockdown ("Catalog Mode" + "Disable Purchasing"): nothing can be bought,
+// so an add-to-cart button has nothing to do — render nothing on the front end,
+// and say why in the editor so the element doesn't look broken.
+if ( function_exists( 'upwc_wc_catalog_locked' ) && upwc_wc_catalog_locked() ) {
+	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+		echo sc_editor_notice( __( 'Hidden: the shop is in Catalog Mode with purchasing disabled.', 'fw' ) );
+	}
+	return;
+}
+
 $product_id = isset( $atts['product'] ) ? (int) $atts['product'] : 0;
 if ( $product_id < 1 ) {
 	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {

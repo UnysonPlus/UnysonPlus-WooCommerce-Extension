@@ -111,6 +111,34 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'catalog_mode'     => $sw( __( 'Catalog Mode', 'fw' ), __( 'Hide prices and add-to-cart buttons across the shop (turn the store into a lookbook).', 'fw' ), 'no' ),
+					'catalog_lock_purchasing' => $sw(
+						__( 'Disable Purchasing', 'fw' ),
+						__( 'Applies with Catalog Mode on. Goes beyond hiding: makes every product non-purchasable, blocks add-to-cart requests (direct ?add-to-cart= URLs and AJAX included), blanks price output everywhere, and redirects the Cart / Checkout pages to the shop. Order confirmation / pay-for-order links keep working, so existing orders are unaffected.', 'fw' ),
+						'no'
+					),
+					'catalog_closed_notice' => array(
+						'label' => __( 'Closed-Shop Message', 'fw' ),
+						'desc'  => __( 'Applies with Disable Purchasing on. Shown in place of the Cart / Checkout page content. Leave empty to redirect those pages to the shop instead (the default).', 'fw' ),
+						'type'  => 'textarea',
+						'value' => '',
+					),
+					'catalog_enquiry'       => $sw(
+						__( 'Enquiry Button', 'fw' ),
+						__( 'Applies with Catalog Mode on. Puts a link where the add-to-cart button used to be — on shop archives and single products — so a lookbook can still take enquiries.', 'fw' ),
+						'no'
+					),
+					'catalog_enquiry_label' => array(
+						'label' => __( 'Enquiry Button Text', 'fw' ),
+						'desc'  => __( 'Label for the enquiry button.', 'fw' ),
+						'type'  => 'text',
+						'value' => __( 'Request a Quote', 'fw' ),
+					),
+					'catalog_enquiry_url'   => array(
+						'label' => __( 'Enquiry Link', 'fw' ),
+						'desc'  => __( 'Where the enquiry button goes — usually a contact page. The product id, name and permalink are appended as query args (product_id, product, product_url) so a form there can prefill. A mailto: address works too. Required: without it the button is not shown.', 'fw' ),
+						'type'  => 'text',
+						'value' => '',
+					),
 					'sale_badge_style' => array(
 						'label'   => __( 'Sale Badge Style', 'fw' ),
 						'desc'    => __( 'How the "Sale" flash shows on shop / product pages.', 'fw' ),

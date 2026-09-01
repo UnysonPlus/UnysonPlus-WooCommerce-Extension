@@ -16,6 +16,16 @@ if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'WC' ) || ! function_
 	return;
 }
 
+// Catalog lockdown ("Catalog Mode" + "Disable Purchasing"): nothing can be bought,
+// so a cart link has nothing to do — render nothing on the front end,
+// and say why in the editor so the element doesn't look broken.
+if ( function_exists( 'upwc_wc_catalog_locked' ) && upwc_wc_catalog_locked() ) {
+	if ( fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+		echo sc_editor_notice( __( 'Hidden: the shop is in Catalog Mode with purchasing disabled.', 'fw' ) );
+	}
+	return;
+}
+
 $icon  = isset( $atts['icon'] ) ? (string) $atts['icon'] : 'bag';
 $label = isset( $atts['label'] ) ? (string) $atts['label'] : '';
 

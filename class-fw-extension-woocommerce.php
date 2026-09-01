@@ -30,6 +30,14 @@ class FW_Extension_Woocommerce extends FW_Extension {
 	private $declared_support = false;
 
 	/**
+	 * The closed-shop message to render in place of the Cart / Checkout content,
+	 * set by _action_lock_cart_checkout() when the setting carries text.
+	 *
+	 * @var string
+	 */
+	private $closed_notice = '';
+
+	/**
 	 * @internal
 	 */
 	public function _init() {
@@ -51,6 +59,15 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		// Completely inert without WooCommerce — the theme / site is unaffected.
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			return;
+		}
+
+		// The shop settings page, surfaced as its own Unyson+ menu entry instead of
+		// living three clicks deep in the Extensions manager. Admin-only, and only
+		// with WooCommerce active (we're past the guard above), so the menu entry
+		// never leads to a page whose settings do nothing.
+		if ( is_admin() ) {
+			require_once dirname( __FILE__ ) . '/includes/class-fw-woocommerce-settings-page.php';
+			new FW_Woocommerce_Settings_Page( $this );
 		}
 
 		// Shared mini-cart renderer + the "Mini Cart" header/footer element (registered
@@ -87,6 +104,14 @@ class FW_Extension_Woocommerce extends FW_Extension {
 		// product-gallery features).
 		add_action( 'after_setup_theme', array( $this, '_action_apply_gallery_settings' ), 100 );
 		add_action( 'wp', array( $this, '_action_apply_shop_behavior' ) );
+
+		// Catalog Mode + "Disable Purchasing" — the hard lockdown. Registered here
+		// (during after_setup_theme) rather than on `wp`, because WooCommerce's
+		// add-to-cart form handler runs on wp_loaded, long before the query is set up.
+		if ( upwc_wc_truthy( $this->get_setting( 'catalog_mode', 'no' ) )
+			&& upwc_wc_truthy( $this->get_setting( 'catalog_lock_purchasing', 'no' ) ) ) {
+			$this->register_catalog_lockdown();
+		}
 		add_filter( 'woocommerce_enable_ajax_add_to_cart', array( $this, '_filter_ajax_add_to_cart' ) );
 		add_filter( 'woocommerce_sale_flash', array( $this, '_filter_sale_flash' ), 10, 3 );
 
@@ -202,7 +227,10 @@ class FW_Extension_Woocommerce extends FW_Extension {
 			<?php if ( (float) $product->get_average_rating() > 0 ) : ?>
 				<div class="upwc-qv__rating"><?php echo wc_get_rating_html( $product->get_average_rating() ); // phpcs:ignore ?></div>
 			<?php endif; ?>
-			<div class="upwc-qv__price"><?php echo $product->get_price_html(); // phpcs:ignore ?></div>
+			<?php $qv_price = $product->get_price_html(); ?>
+			<?php if ( '' !== (string) $qv_price ) : ?>
+				<div class="upwc-qv__price"><?php echo $qv_price; // phpcs:ignore ?></div>
+			<?php endif; ?>
 			<div class="upwc-qv__excerpt"><?php echo wp_kses_post( wpautop( $product->get_short_description() ) ); ?></div>
 			<?php woocommerce_template_single_add_to_cart(); ?>
 			<a class="upwc-qv__link" href="<?php echo esc_url( $product->get_permalink() ); ?>"><?php esc_html_e( 'View full details', 'fw' ); ?></a>
@@ -249,7 +277,137 @@ class FW_Extension_Woocommerce extends FW_Extension {
 			remove_action( 'woocommerce_after_shop_loop_item_title', 'woocommerce_template_loop_price', 10 );
 			remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );
 			remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
+
+			// Optional enquiry link in the vacated slot — a lookbook that still
+			// wants to hear from people. Same priorities the add-to-cart templates
+			// just gave up, so it lands exactly where the button was.
+			if ( upwc_wc_truthy( $this->get_setting( 'catalog_enquiry', 'no' ) )
+				&& '' !== trim( (string) $this->get_setting( 'catalog_enquiry_url', '' ) ) ) {
+				add_action( 'woocommerce_after_shop_loop_item', array( $this, '_action_enquiry_button' ), 10 );
+				add_action( 'woocommerce_single_product_summary', array( $this, '_action_enquiry_button' ), 30 );
+			}
 		}
+	}
+
+	/**
+	 * Print the Catalog Mode enquiry button in the slot the hidden add-to-cart
+	 * template just vacated. The markup itself is shared with our own product
+	 * cards — see upwc_wc_enquiry_html().
+	 *
+	 * @internal
+	 */
+	public function _action_enquiry_button() {
+		global $product;
+
+		echo upwc_wc_enquiry_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in the helper.
+	}
+
+	/**
+	 * Close the shop for business: Catalog Mode's strict variant.
+	 *
+	 * Plain Catalog Mode only unhooks the price / add-to-cart templates, which
+	 * hides the UI but leaves the store buyable — a crafted `?add-to-cart=<id>`
+	 * URL, a stale AJAX button, or a bookmarked /cart/ still work. With
+	 * "Disable Purchasing" on we take the store out of commission properly:
+	 * products report themselves non-purchasable, every add-to-cart path is
+	 * refused, price HTML resolves to nothing (so our own product cards and any
+	 * third-party widget go quiet too), and the cart / checkout pages bounce to
+	 * the shop. Order-received / order-pay endpoints are deliberately spared so
+	 * orders placed before the switch can still be completed and viewed.
+	 */
+	private function register_catalog_lockdown() {
+		add_filter( 'woocommerce_is_purchasable', '__return_false', 99 );
+		add_filter( 'woocommerce_variation_is_purchasable', '__return_false', 99 );
+		add_filter( 'woocommerce_get_price_html', '__return_empty_string', 99 );
+		add_filter( 'woocommerce_loop_add_to_cart_link', '__return_empty_string', 99 );
+
+		// Refuse every add-to-cart route (form post, AJAX, REST/Store API all funnel
+		// through this validation filter).
+		add_filter( 'woocommerce_add_to_cart_validation', '__return_false', 99 );
+
+		// Belt and braces: unhook WooCommerce's own `?add-to-cart=` handler before it
+		// runs (wp_loaded @20) and scrub the parameter so nothing downstream sees it.
+		add_action( 'wp_loaded', array( $this, '_action_block_add_to_cart' ), 5 );
+
+		add_action( 'template_redirect', array( $this, '_action_lock_cart_checkout' ) );
+	}
+
+	/**
+	 * Disarm WooCommerce's add-to-cart request handler under the catalog lockdown.
+	 *
+	 * @internal
+	 */
+	public function _action_block_add_to_cart() {
+		remove_action( 'wp_loaded', array( 'WC_Form_Handler', 'add_to_cart_action' ), 20 );
+		unset( $_REQUEST['add-to-cart'], $_GET['add-to-cart'], $_POST['add-to-cart'] ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
+
+	/**
+	 * Send Cart / Checkout back to the shop under the catalog lockdown, leaving the
+	 * order-received and order-pay endpoints reachable so existing orders survive.
+	 *
+	 * @internal
+	 */
+	public function _action_lock_cart_checkout() {
+		if ( is_admin() || ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) ) {
+			return;
+		}
+		if ( ! function_exists( 'is_cart' ) || ! function_exists( 'is_checkout' ) ) {
+			return;
+		}
+		if ( ! is_cart() && ! is_checkout() ) {
+			return;
+		}
+		if ( function_exists( 'is_wc_endpoint_url' )
+			&& ( is_wc_endpoint_url( 'order-received' ) || is_wc_endpoint_url( 'order-pay' ) ) ) {
+			return;
+		}
+
+		// A message is friendlier than a silent bounce — someone who followed a
+		// link to the cart deserves to be told the shop isn't taking orders, not
+		// dumped on the shop page wondering whether they misclicked. Only when the
+		// setting carries text; empty keeps the plain redirect.
+		$notice = trim( (string) $this->get_setting( 'catalog_closed_notice', '' ) );
+		if ( '' !== $notice ) {
+			$this->closed_notice = $notice;
+			add_filter( 'the_content', array( $this, '_filter_closed_notice_content' ), 0 );
+			return;
+		}
+
+		$shop = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : '';
+		wp_safe_redirect( $shop ? $shop : home_url( '/' ) );
+		exit;
+	}
+
+	/**
+	 * Replace the Cart / Checkout page content with the closed-shop message.
+	 *
+	 * Runs at priority 0 so it pre-empts the WooCommerce (or page-builder)
+	 * shortcodes that would otherwise render a cart, and only for the page being
+	 * displayed — a cart shortcode dropped in some other loop on the page is left
+	 * alone by the is_main_query()/in_the_loop() guard.
+	 *
+	 * @param string $content
+	 * @return string
+	 * @internal
+	 */
+	public function _filter_closed_notice_content( $content ) {
+		if ( ! in_the_loop() || ! is_main_query() || '' === (string) $this->closed_notice ) {
+			return $content;
+		}
+
+		$shop = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : '';
+
+		$html = '<div class="woocommerce upwc-shop-closed"><div class="woocommerce-info">'
+			. wp_kses_post( wpautop( $this->closed_notice ) )
+			. '</div>';
+
+		if ( $shop ) {
+			$html .= '<p><a class="button wc-backward" href="' . esc_url( $shop ) . '">'
+				. esc_html__( 'Continue browsing', 'fw' ) . '</a></p>';
+		}
+
+		return $html . '</div>';
 	}
 
 	/**

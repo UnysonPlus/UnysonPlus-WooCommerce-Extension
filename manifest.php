@@ -11,7 +11,7 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.55';
+$manifest['version']     = '1.0.58';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';
@@ -38,6 +38,45 @@ $manifest['requires_wp']  = '5.8';
 
 /**
  * Changelog
+ *
+ * 1.0.58 - Catalog Mode grew the two things a lookbook actually needs. An optional
+ *          ENQUIRY BUTTON (Enquiry Button / Text / Link settings) drops into the exact
+ *          slot the hidden add-to-cart vacated on shop archives, single products and our
+ *          own [wc_products] cards, carrying the product id / name / permalink as query
+ *          args so a contact form can prefill (a mailto: link gets them as a subject
+ *          instead). And a CLOSED-SHOP MESSAGE setting replaces the Disable-Purchasing
+ *          redirect on Cart / Checkout with a message plus a "Continue browsing" link —
+ *          someone who followed a link to the cart is told the shop is not taking orders
+ *          rather than silently bounced; leaving it empty keeps the redirect. Catalog
+ *          Mode also now reaches the [wc_products] element itself: it works by unhooking
+ *          WooCommerce's price / add-to-cart templates, which our cards call directly, so
+ *          until now a "lookbook" still sold from every page-builder grid on the site.
+ *
+ * 1.0.57 - The shop settings now have their own "WooCommerce" entry in the Unyson+ admin
+ *          menu (FW_Woocommerce_Settings_Page) instead of only being reachable through
+ *          Extensions -> WooCommerce -> Settings, which is where nobody looks for a
+ *          catalog layout option. Same schema and same store (settings-options.php,
+ *          fw_get_db_ext_settings_option), so nothing that reads a setting changes; the
+ *          page renders the options natively and saves on the load- hook, and the
+ *          Extensions-manager card's Settings link is redirected here via
+ *          fw_ext_manager_settings_url so there is one settings screen rather than two.
+ *          The menu entry only appears when the WooCommerce plugin is active.
+ *
+ * 1.0.56 - Catalog Mode gained a "Disable Purchasing" companion switch (Shop Behavior
+ *          settings). Catalog Mode alone only unhooks the price / add-to-cart templates,
+ *          so a store left in it could still be bought from through a crafted
+ *          ?add-to-cart= URL, a cached AJAX button, or a bookmarked /cart/. With the new
+ *          switch on, the store is genuinely closed: woocommerce_is_purchasable (and the
+ *          variation equivalent) return false, add-to-cart validation refuses every route
+ *          including AJAX and the Store API, WooCommerce's own wp_loaded add-to-cart
+ *          handler is unhooked and the request parameter scrubbed, price HTML resolves to
+ *          an empty string store-wide (so third-party widgets and our own product cards go
+ *          quiet too), and the Cart / Checkout pages redirect to the shop — while the
+ *          order-received and order-pay endpoints stay reachable so orders placed before
+ *          the switch can still be paid and viewed. The shop-only elements (Cart icon,
+ *          Mini Cart, Add to Cart button, Cart and Checkout pages) render nothing on the
+ *          front end in this state, with an editor notice explaining why, via the new
+ *          shared upwc_wc_catalog_locked() helper.
  *
  * 1.0.52 - Product Filters element is now a filter PANEL, not a single widget. [wc_product_filters]
  *          previously rendered one Woo filter widget (price OR rating OR one attribute…) per element.

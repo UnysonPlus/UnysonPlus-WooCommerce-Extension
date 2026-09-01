@@ -389,8 +389,13 @@ if ( ! function_exists( 'upwc_wc_products_card_slotted' ) ) {
 			}
 		}
 
+		// Catalog Mode reaches our cards too: it works by unhooking WooCommerce's
+		// price / add-to-cart templates, which these slots don't go through — so
+		// without this a "lookbook" would still be selling from every grid.
+		$catalog_mode = function_exists( 'upwc_wc_catalog_mode' ) && upwc_wc_catalog_mode();
+
 		$slots['price'] = '';
-		if ( $r['show_price'] ) {
+		if ( $r['show_price'] && ! $catalog_mode ) {
 			$price_html = $product->get_price_html();
 			if ( $price_html ) {
 				$slots['price'] = '<div class="upwc-product__price">' . $price_html . '</div>';
@@ -402,7 +407,14 @@ if ( ! function_exists( 'upwc_wc_products_card_slotted' ) ) {
 			: '';
 
 		$slots['cart'] = '';
-		if ( $r['show_atc'] && function_exists( 'woocommerce_template_loop_add_to_cart' ) ) {
+		if ( $catalog_mode ) {
+			// The enquiry button takes the cart slot when Catalog Mode is on and one
+			// is configured; otherwise the slot simply stays empty.
+			$enquiry = function_exists( 'upwc_wc_enquiry_html' ) ? upwc_wc_enquiry_html( $product ) : '';
+			if ( '' !== $enquiry ) {
+				$slots['cart'] = '<div class="upwc-product__cart">' . $enquiry . '</div>';
+			}
+		} elseif ( $r['show_atc'] && function_exists( 'woocommerce_template_loop_add_to_cart' ) ) {
 			$atc_filter = null;
 			if ( '' !== $r['add_to_cart_text'] ) {
 				$atc_label  = $r['add_to_cart_text'];
@@ -415,7 +427,11 @@ if ( ! function_exists( 'upwc_wc_products_card_slotted' ) ) {
 			if ( $atc_filter ) {
 				remove_filter( 'woocommerce_product_add_to_cart_text', $atc_filter, 20 );
 			}
-			$slots['cart'] = '<div class="upwc-product__cart">' . $cart_inner . '</div>';
+			// Under the catalog lockdown WooCommerce's loop button resolves to nothing —
+			// don't leave an empty wrapper (and its card-row gap) behind.
+			$slots['cart'] = '' === trim( (string) $cart_inner )
+				? ''
+				: '<div class="upwc-product__cart">' . $cart_inner . '</div>';
 		}
 
 		// --- assemble rows from the editable designer (card_rows), or a preset fallback ---

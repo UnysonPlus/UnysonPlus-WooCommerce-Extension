@@ -53,6 +53,11 @@ function upwc_render_mini_cart( $atts = array() ) {
 	if ( ! class_exists( 'WooCommerce' ) || ! function_exists( 'WC' ) || ! function_exists( 'wc_get_cart_url' ) ) {
 		return '';
 	}
+	// Catalog lockdown ("Catalog Mode" + "Disable Purchasing"): there is no cart to
+	// show — the mini-cart disappears from both the page builder and the header/footer.
+	if ( function_exists( 'upwc_wc_catalog_locked' ) && upwc_wc_catalog_locked() ) {
+		return '';
+	}
 	$atts = is_array( $atts ) ? $atts : array();
 
 	// Drawer = a right slide-out side-cart (portaled to <body> + scroll-locked); anything
