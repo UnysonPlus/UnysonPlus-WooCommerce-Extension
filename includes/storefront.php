@@ -1,6 +1,15 @@
 <?php if ( ! defined( 'FW' ) ) {
 	die( 'Forbidden' );
 }
+// Every convenience here is a single-PRODUCT feature that calls WooCommerce conditional tags
+// (`is_product()`) and the WC_Product API — inert, and a fatal, without the WooCommerce plugin. Bail
+// so this file defines no function and registers no `wp_footer` hook when WooCommerce is inactive
+// (the sibling storefront files — mini-cart, products-render — self-guard the same way). Without this,
+// `upwc_sticky_atc_bar()` on wp_footer called `is_product()` on a non-Woo site and fatal-errored the
+// page footer whenever the extension was active but WooCommerce was not installed.
+if ( ! class_exists( 'WooCommerce' ) ) {
+	return;
+}
 /**
  * Two single-product conveniences that are too small for files of their own.
  *
