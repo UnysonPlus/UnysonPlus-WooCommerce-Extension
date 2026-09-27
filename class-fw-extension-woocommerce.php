@@ -44,6 +44,9 @@ class FW_Extension_Woocommerce extends FW_Extension {
 	 * @internal
 	 */
 	public function _init() {
+		// AI Assistant abilities (only registered while that extension is active).
+		require_once dirname( __FILE__ ) . '/includes/ai-abilities.php';
+
 		// Hide WooCommerce shop elements from the page builder when the
 		// WooCommerce plugin isn't active (the extension can be enabled before
 		// WooCommerce is installed). Registered unconditionally so the filter

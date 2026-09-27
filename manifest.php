@@ -11,7 +11,7 @@ $manifest['description'] = __(
 	'fw'
 );
 
-$manifest['version']     = '1.0.69';
+$manifest['version']     = '1.0.71';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 $manifest['thumbnail']   = 'thumbnail.svg';
@@ -42,6 +42,13 @@ $manifest['requirements'] = array(
 
 /**
  * Changelog
+ *
+ * 1.0.71 - AI Assistant abilities (includes/ai-abilities.php, registered only while both this
+ *          extension and the AI Assistant (Beta) are active): woo-settings / woo-settings-update
+ *          (read + validated write of the shop-look settings, revision first, undo restores),
+ *          woo-list-products and woo-save-product (create / update simple products through the
+ *          WooCommerce CRUD — SKU uniqueness, price and sale checks, the card ribbon and size
+ *          guide; undo restores or trashes). Store data (orders, customers) is never read.
  *
  * 1.0.68 - Settings page reorganised into TABS (Catalog / Behavior / Catalog Mode / Shopper
  *          Tools) — one flat column of boxes had stopped being navigable now that the
